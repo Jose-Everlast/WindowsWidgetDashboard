@@ -230,7 +230,7 @@ export interface WidgetCollector<C, T> {
 // collector.ts: export const collector = defineCollector(manifest, { async collect(ctx) { ... } });
 ```
 
-Push-Collectors (`subscribe`) kommen erst mit Phase 3 (relaunch-radar-SSE) hinzu.
+**Push (seit Phase 3):** Ein Collector kann zusätzlich `subscribe(ctx)` anbieten. `ctx` enthält `config`, `env`, `signal` (wird bei `stop()` abgebrochen), `log` und `refresh()`; die Funktion darf eine Cleanup-Funktion zurückgeben. `subscribe` meldet nur „es hat sich etwas geändert“ per `ctx.refresh()`. Der Scheduler bündelt solche Meldungen (500 ms) und ruft dann `collect()` auf. Daten kommen also immer über denselben, validierten Weg, und das Polling läuft als Sicherheitsnetz weiter. Für SSE-Quellen gibt es `server/lib/sse.ts` (`subscribeSSE` mit Reconnect und Backoff).
 
 **Instanzen statt Singletons:** `dashboard.config.json` legt fest, welche Instanzen eines Widget-Typs es gibt, wo sie im Grid liegen und wie sie konfiguriert sind. Derselbe Typ lässt sich also mehrfach nutzen, z. B. Wetter für zwei Orte oder News mit unterschiedlichen Feeds:
 ```json
@@ -488,8 +488,9 @@ Jede Phase ist ein eigener Zyklus aus `/plan-feature` → `/execute` → `/valid
 
 **Validierung:** Ports im Abgleich mit `netstat -ano`. Diese Claude-Session erscheint mit Projekt `windowsDashboard` als aktiv im Agents-Widget.
 
-### Phase 3 – Projekte: relaunch-radar (≈ ½ Session)
+### Phase 3 – Projekte: relaunch-radar (≈ ½ Session) ✔ umgesetzt
 - ✅ Collector mit API- und SSE-Anbindung und Datei-Fallback, dazu das Widget
+- ✅ Kern: `subscribe` im Widget-Vertrag, Push-Auslöser im Scheduler, `server/lib/sse.ts`
 
 **Validierung:** relaunch-radar starten und stoppen; beide Modi werden korrekt angezeigt.
 

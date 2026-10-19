@@ -1,0 +1,19 @@
+[
+  {
+    "id": "job-1",
+    "request": {
+      "type": "mockup-create",
+      "slug": "firma-k-de",
+      "step": "build"
+    },
+    "status": "running",
+    "queuedAt": null,
+    "startedAt": "2026-10-18T08:02:04.000Z",
+    "endedAt": null,
+    "exitCode": null,
+    "logTail": [
+      "…"
+    ],
+    "logFile": "logs/jobs/20261018-100204-mockup-create-firma-k-de.log"
+  }
+]

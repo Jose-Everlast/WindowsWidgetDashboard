@@ -255,3 +255,76 @@ describe("createScheduler", () => {
     expect(collect).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("push (subscribe)", () => {
+  function pushInstance(collect: () => Promise<unknown>, subscribe: NonNullable<WidgetCollector<unknown, unknown>["subscribe"]>) {
+    const r = instance(collect);
+    r.parsedConfig = { url: "x" };
+    r.loaded!.collector = { collect, subscribe };
+    return r;
+  }
+
+  it("subscribes once per instance with the parsed config and debounces refresh bursts", async () => {
+    const collect = vi.fn(async () => ({ n: 1 }));
+    let ctx: Parameters<NonNullable<WidgetCollector<unknown, unknown>["subscribe"]>>[0] | undefined;
+    const subscribe = vi.fn(c => {
+      ctx = c;
+    });
+    const s = createScheduler({ cache: createCache(), instances: [pushInstance(collect, subscribe)], env: {} });
+    s.start();
+    await flush();
+    expect(subscribe).toHaveBeenCalledTimes(1);
+    expect(ctx?.config).toEqual({ url: "x" });
+    expect(collect).toHaveBeenCalledTimes(1); // initial poll
+
+    ctx!.refresh();
+    await vi.advanceTimersByTimeAsync(50);
+    ctx!.refresh();
+    ctx!.refresh();
+    await vi.advanceTimersByTimeAsync(499);
+    expect(collect).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(collect).toHaveBeenCalledTimes(2); // one push run for the whole burst
+    s.stop();
+  });
+
+  it("stop() aborts the signal, calls the cleanup and ignores later refreshes", async () => {
+    const collect = vi.fn(async () => ({ n: 1 }));
+    const cleanup = vi.fn();
+    let ctx: Parameters<NonNullable<WidgetCollector<unknown, unknown>["subscribe"]>>[0] | undefined;
+    const s = createScheduler({
+      cache: createCache(),
+      instances: [pushInstance(collect, c => ((ctx = c), cleanup))],
+      env: {},
+    });
+    s.start();
+    await flush();
+    ctx!.refresh(); // pending debounce
+    s.stop();
+    expect(ctx!.signal.aborted).toBe(true);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    ctx!.refresh();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(collect).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps polling when subscribe throws", async () => {
+    const cache = createCache();
+    const s = createScheduler({
+      cache,
+      instances: [
+        pushInstance(
+          async () => ({ n: 7 }),
+          () => {
+            throw new Error("kein SSE");
+          },
+        ),
+      ],
+      env: {},
+    });
+    s.start();
+    await flush();
+    expect(cache.get("t1")).toMatchObject({ status: "ok", data: { n: 7 } });
+    s.stop();
+  });
+});

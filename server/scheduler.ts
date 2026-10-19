@@ -6,6 +6,8 @@ import { log, logError } from "./log";
 import type { ResolvedInstance } from "./widgets/loader";
 
 const DEFAULT_TIMEOUT_MS = 20_000;
+// Bursts of push events (e.g. job end + queue + notify) become one collect.
+export const PUSH_DEBOUNCE_MS = 500;
 
 export const formatDuration = (ms: number) => (ms < 1000 ? `${ms} ms` : `${Math.round(ms / 1000)} s`);
 
@@ -135,28 +137,80 @@ export function createScheduler(deps: {
     return p;
   }
 
+  const runLogged = (r: ResolvedInstance) =>
+    run(r).catch(err => logError(`widget:${r.type}/${r.instance}`, err instanceof Error ? err.message : String(err)));
+
   // setTimeout chain instead of setInterval: re-plan only after a run finished, so runs never overlap.
   function loop(r: ResolvedInstance) {
     if (!running) return;
-    run(r)
-      .catch(err => logError(`widget:${r.type}/${r.instance}`, err instanceof Error ? err.message : String(err)))
-      .finally(() => {
-        if (!running) return;
-        const interval = r.layout.intervalMs ?? r.loaded!.manifest.intervalMs;
-        timers.set(r.instance, setTimeout(() => loop(r), interval));
+    runLogged(r).finally(() => {
+      if (!running) return;
+      const interval = r.layout.intervalMs ?? r.loaded!.manifest.intervalMs;
+      timers.set(r.instance, setTimeout(() => loop(r), interval));
+    });
+  }
+
+  // Push: a collector's subscribe() only asks for a refresh; data always comes through collect().
+  // Polling keeps running as the safety net. A push run does not shift the next poll.
+  const subscriptions: Array<{ controller: AbortController; cleanup?: () => void }> = [];
+  const debounces = new Map<string, ReturnType<typeof setTimeout>>();
+
+  function subscribe(r: ResolvedInstance) {
+    const { collector } = r.loaded!;
+    if (!collector.subscribe) return;
+    const scope = `widget:${r.type}/${r.instance}`;
+    const controller = new AbortController();
+    const refresh = () => {
+      if (!running || controller.signal.aborted) return;
+      clearTimeout(debounces.get(r.instance));
+      debounces.set(
+        r.instance,
+        setTimeout(() => {
+          debounces.delete(r.instance);
+          if (running) void runLogged(r);
+        }, PUSH_DEBOUNCE_MS),
+      );
+    };
+    try {
+      const cleanup = collector.subscribe({
+        config: r.parsedConfig,
+        env: deps.env,
+        signal: controller.signal,
+        log: (...args) => log(scope, ...args),
+        refresh,
       });
+      subscriptions.push({ controller, cleanup: typeof cleanup === "function" ? cleanup : undefined });
+    } catch (err) {
+      // Push is an optimisation: polling still works without it.
+      logError(scope, `subscribe fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      controller.abort();
+    }
   }
 
   return {
     start() {
       if (running) return;
       running = true;
-      for (const r of deps.instances) if (r.loaded) loop(r);
+      for (const r of deps.instances) {
+        if (!r.loaded) continue;
+        loop(r);
+        subscribe(r);
+      }
     },
     stop() {
       running = false;
       for (const t of timers.values()) clearTimeout(t);
       timers.clear();
+      for (const t of debounces.values()) clearTimeout(t);
+      debounces.clear();
+      for (const { controller, cleanup } of subscriptions.splice(0)) {
+        controller.abort();
+        try {
+          cleanup?.();
+        } catch {
+          // a failing cleanup must not stop the others
+        }
+      }
     },
     async refresh(instance) {
       const r = byId.get(instance);

@@ -42,8 +42,23 @@ export interface CollectContext<C> {
   log: (...args: unknown[]) => void;
 }
 
+export interface SubscribeContext<C> {
+  config: C;
+  env: Record<string, string | undefined>;
+  /** Aborted when the scheduler stops. */
+  signal: AbortSignal;
+  log: (...args: unknown[]) => void;
+  /** Ask for an immediate collect(); debounced by the scheduler. Push never carries data itself. */
+  refresh: () => void;
+}
+
 export interface WidgetCollector<C, T> {
   collect(ctx: CollectContext<C>): Promise<T>;
+  /**
+   * Optional push trigger (SSE, file watch): call ctx.refresh() when the source changed.
+   * Data still comes only through collect(). Clean up via ctx.signal or the returned function.
+   */
+  subscribe?(ctx: SubscribeContext<C>): void | (() => void);
   /** Extra actions; "refresh" is built in and provided by the scheduler. */
   actions?: Record<string, (ctx: CollectContext<C>, input: unknown) => Promise<unknown>>;
 }

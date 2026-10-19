@@ -1,0 +1,120 @@
+{
+  "autopilot": {
+    "on": true,
+    "since": "2026-10-16T20:25:23.451Z",
+    "push": false,
+    "running": [
+      {
+        "slug": "firma-k-de",
+        "name": "Firma K",
+        "step": "build",
+        "reason": "…",
+        "jobId": "job-1",
+        "startedAt": "2026-10-18T08:02:04.000Z",
+        "etaMin": 6
+      }
+    ],
+    "pausedUntil": null,
+    "next": null,
+    "status": "running"
+  },
+  "attention": [
+    {
+      "slug": "firma-a-de",
+      "name": "Firma A",
+      "kind": "rate",
+      "text": "Mockup gebaut - bewerten",
+      "at": "2026-10-18T08:05:25.209Z"
+    },
+    {
+      "slug": "firma-b-de",
+      "name": "Firma B",
+      "kind": "rate",
+      "text": "Mockup gebaut - bewerten",
+      "at": "2026-10-18T08:03:01.036Z"
+    },
+    {
+      "slug": "firma-c-de",
+      "name": "Firma C",
+      "kind": "rate",
+      "text": "Mockup gebaut - bewerten",
+      "at": "2026-10-18T08:02:04.106Z"
+    },
+    {
+      "slug": "firma-d-de",
+      "name": "Firma D",
+      "kind": "rate",
+      "text": "Mockup gebaut - bewerten",
+      "at": "2026-10-17T19:33:05.730Z"
+    },
+    {
+      "slug": "firma-e-de",
+      "name": "Firma E",
+      "kind": "failed",
+      "text": "exit 1: [create] Claude ran longer than 20 minutes - stopped",
+      "at": "2026-10-18T04:49:34.665Z"
+    },
+    {
+      "slug": "firma-f-de",
+      "name": "Firma F",
+      "kind": "failed",
+      "text": "Claude ran longer than 45 minutes - stopped",
+      "at": "2026-10-18T04:49:33.796Z"
+    },
+    {
+      "slug": "firma-g-de",
+      "name": "Firma G",
+      "kind": "failed",
+      "text": "exit 1: [create] Claude ran longer than 20 minutes - stopped",
+      "at": "2026-10-18T04:49:32.781Z"
+    },
+    {
+      "slug": "firma-h-de",
+      "name": "Firma H",
+      "kind": "failed",
+      "text": "analysis/findings.claude.json is not JSON: Expected ',' or '}' after property value in JSON at position 5352 (line 72 column 114)",
+      "at": "2026-10-17T17:29:22.174Z"
+    }
+  ],
+  "leads": [
+    {
+      "slug": "firma-i-de",
+      "name": "Firma I",
+      "track": [
+        "analysis",
+        "mockup"
+      ],
+      "build": {
+        "state": "built",
+        "step": null,
+        "until": null,
+        "message": null
+      },
+      "effort": {
+        "score": 10.5,
+        "reasons": [
+          "10 Seiten",
+          "kein Shop"
+        ]
+      }
+    },
+    {
+      "slug": "firma-j-de",
+      "name": "Firma J",
+      "track": [],
+      "build": {
+        "state": "none",
+        "step": "concept",
+        "until": null,
+        "message": null
+      },
+      "effort": {
+        "score": 21.4,
+        "reasons": [
+          "6 Seiten",
+          "Shop"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "seenAt": null,
+  "items": [
+    {
+      "id": "mvf9m0lk-0",
+      "at": "2026-10-19T13:03:18.920Z",
+      "kind": "idle",
+      "slug": null,
+      "title": "Autopilot: nichts mehr zu bauen",
+      "lastStep": null,
+      "track": [],
+      "next": {
+        "by": "none",
+        "text": "Alle passenden Leads haben ein Mockup oder warten auf dich"
+      },
+      "etaMin": null,
+      "pushed": false
+    },
+    {
+      "id": "mvdki0io-2b",
+      "at": "2026-10-18T08:32:35.616Z",
+      "kind": "idle",
+      "slug": null,
+      "title": "Autopilot: nichts mehr zu bauen",
+      "lastStep": null,
+      "track": [],
+      "next": {
+        "by": "none",
+        "text": "Alle passenden Leads haben ein Mockup oder warten auf dich"
+      },
+      "etaMin": null,
+      "pushed": false
+    },
+    {
+      "id": "mvdki0fq-2a",
+      "at": "2026-10-18T08:32:35.510Z",
+      "kind": "built",
+      "slug": "firma-k-de",
+      "title": "Firma K: Mockup gebaut",
+      "lastStep": "Seite + Prüfung",
+      "track": [
+        "analysis",
+        "mockup"
+      ],
+      "next": {
+        "by": "du",
+        "text": "bewerten"
+      },
+      "etaMin": null,
+      "pushed": false
+    },
+    {
+      "id": "mvdjz5pu-29",
+      "at": "2026-10-18T08:17:55.890Z",
+      "kind": "step",
+      "slug": "firma-k-de",
+      "title": "Firma K: Entwürfe fertig, baut die Seite",
+      "lastStep": "Entwürfe & Bilder",
+      "track": [
+        "analysis"
+      ],
+      "next": {
+        "by": "auto",
+        "text": "weiter"
+      },
+      "etaMin": 17,
+      "pushed": false
+    },
+    {
+      "id": "mvdjz5pp-28",
+      "at": "2026-10-18T08:17:55.885Z",
+      "kind": "step",
+      "slug": "firma-k-de",
+      "title": "Firma K: Erster Entwurf fertig, zeichnet die Bilder",
+      "lastStep": "Erster Entwurf",
+      "track": [
+        "analysis"
+      ],
+      "next": {
+        "by": "auto",
+        "text": "weiter"
+      },
+      "etaMin": 19,
+      "pushed": false
+    },
+    {
+      "id": "mvdjxgxu-27",
+      "at": "2026-10-18T08:16:37.122Z",
+      "kind": "step",
+      "slug": "firma-k-de",
+      "title": "Firma K: Konzept fertig, zeichnet den ersten Entwurf",
+      "lastStep": "Konzept",
+      "track": [
+        "analysis"
+      ],
+      "next": {
+        "by": "auto",
+        "text": "weiter"
+      },
+      "etaMin": 20,
+      "pushed": false
+    },
+    {
+      "id": "mvdjj2ji-26",
+      "at": "2026-10-18T08:05:25.278Z",
+      "kind": "built",
+      "slug": "firma-a-de",
+      "title": "Firma A: Mockup gebaut",
+      "lastStep": "Seite + Prüfung",
+      "track": [
+        "analysis",
+        "mockup"
+      ],
+      "next": {
+        "by": "du",
+        "text": "bewerten"
+      },
+      "etaMin": null,
+      "pushed": false
+    },
+    {
+      "id": "mvdjfzb0-25",
+      "at": "2026-10-18T08:03:01.116Z",
+      "kind": "built",
+      "slug": "firma-b-de",
+      "title": "Firma B: Mockup gebaut",
+      "lastStep": "Seite + Prüfung",
+      "track": [
+        "analysis",
+        "mockup"
+      ],
+      "next": {
+        "by": "du",
+        "text": "bewerten"
+      },
+      "etaMin": null,
+      "pushed": false
+    }
+  ]
+}

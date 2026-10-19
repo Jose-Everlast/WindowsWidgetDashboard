@@ -73,6 +73,13 @@
       "x": 3,
       "y": 3,
       "config": {}
+    },
+    {
+      "instance": "relaunch-radar",
+      "type": "relaunch-radar",
+      "x": 6,
+      "y": 3,
+      "config": {}
     }
   ]
 }

@@ -1,0 +1,121 @@
+{
+  "mode": "live",
+  "uiUrl": "http://127.0.0.1:3000",
+  "autopilot": {
+    "on": true,
+    "status": "running",
+    "pausedUntil": null,
+    "next": null
+  },
+  "jobs": [
+    {
+      "type": "mockup-create",
+      "slug": "firma-k-de",
+      "name": "Firma K",
+      "startedAt": "2026-10-18T08:02:04.000Z",
+      "etaMin": 6
+    }
+  ],
+  "attention": {
+    "counts": {
+      "rate": 4,
+      "failed": 4,
+      "limit": 0
+    },
+    "items": [
+      {
+        "slug": "firma-a-de",
+        "name": "Firma A",
+        "kind": "rate",
+        "text": "Mockup gebaut - bewerten",
+        "at": "2026-10-18T08:05:25.209Z"
+      },
+      {
+        "slug": "firma-b-de",
+        "name": "Firma B",
+        "kind": "rate",
+        "text": "Mockup gebaut - bewerten",
+        "at": "2026-10-18T08:03:01.036Z"
+      },
+      {
+        "slug": "firma-c-de",
+        "name": "Firma C",
+        "kind": "rate",
+        "text": "Mockup gebaut - bewerten",
+        "at": "2026-10-18T08:02:04.106Z"
+      },
+      {
+        "slug": "firma-d-de",
+        "name": "Firma D",
+        "kind": "rate",
+        "text": "Mockup gebaut - bewerten",
+        "at": "2026-10-17T19:33:05.730Z"
+      },
+      {
+        "slug": "firma-e-de",
+        "name": "Firma E",
+        "kind": "failed",
+        "text": "exit 1: [create] Claude ran longer than 20 minutes - stopped",
+        "at": "2026-10-18T04:49:34.665Z"
+      }
+    ]
+  },
+  "notifications": [
+    {
+      "id": "mvf9m0lk-0",
+      "at": "2026-10-19T13:03:18.920Z",
+      "kind": "idle",
+      "slug": null,
+      "title": "Autopilot: nichts mehr zu bauen",
+      "next": {
+        "by": "none",
+        "text": "Alle passenden Leads haben ein Mockup oder warten auf dich"
+      }
+    },
+    {
+      "id": "mvdki0io-2b",
+      "at": "2026-10-18T08:32:35.616Z",
+      "kind": "idle",
+      "slug": null,
+      "title": "Autopilot: nichts mehr zu bauen",
+      "next": {
+        "by": "none",
+        "text": "Alle passenden Leads haben ein Mockup oder warten auf dich"
+      }
+    },
+    {
+      "id": "mvdki0fq-2a",
+      "at": "2026-10-18T08:32:35.510Z",
+      "kind": "built",
+      "slug": "firma-k-de",
+      "title": "Firma K: Mockup gebaut",
+      "next": {
+        "by": "du",
+        "text": "bewerten"
+      }
+    },
+    {
+      "id": "mvdjz5pu-29",
+      "at": "2026-10-18T08:17:55.890Z",
+      "kind": "step",
+      "slug": "firma-k-de",
+      "title": "Firma K: Entwürfe fertig, baut die Seite",
+      "next": {
+        "by": "auto",
+        "text": "weiter"
+      }
+    },
+    {
+      "id": "mvdjz5pp-28",
+      "at": "2026-10-18T08:17:55.885Z",
+      "kind": "step",
+      "slug": "firma-k-de",
+      "title": "Firma K: Erster Entwurf fertig, zeichnet die Bilder",
+      "next": {
+        "by": "auto",
+        "text": "weiter"
+      }
+    }
+  ],
+  "unread": 200
+}
