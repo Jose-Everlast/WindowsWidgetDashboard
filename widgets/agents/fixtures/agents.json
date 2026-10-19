@@ -1,0 +1,45 @@
+{
+  "processes": {
+    "claude": 6,
+    "codex": 0
+  },
+  "sessions": [
+    {
+      "agent": "claude",
+      "project": "windowsDashboard",
+      "cwd": "C:_repos${project}",
+      "sessionId": "00000000-0000-4000-8000-000000000001",
+      "lastActivity": "2026-10-19T14:11:02.153Z",
+      "active": true,
+      "branch": "main"
+    },
+    {
+      "agent": "claude",
+      "project": "relaunch-radar",
+      "cwd": "C:_repos${project}",
+      "sessionId": "00000000-0000-4000-8000-000000000002",
+      "lastActivity": "2026-10-19T14:02:02.153Z",
+      "active": true,
+      "branch": "master"
+    },
+    {
+      "agent": "claude",
+      "project": "widget_dashboard",
+      "cwd": "C:_repos${project}",
+      "sessionId": "00000000-0000-4000-8000-000000000003",
+      "lastActivity": "2026-10-19T13:21:02.153Z",
+      "active": false,
+      "branch": "feat/widget-hub"
+    },
+    {
+      "agent": "codex",
+      "project": "relaunch-radar",
+      "cwd": "C:_repos${project}",
+      "sessionId": "00000000-0000-4000-8000-000000000004",
+      "lastActivity": "2026-10-19T12:11:02.153Z",
+      "active": false,
+      "branch": "master",
+      "kind": "exec"
+    }
+  ]
+}

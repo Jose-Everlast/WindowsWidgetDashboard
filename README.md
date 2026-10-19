@@ -46,6 +46,19 @@ Die Menübezeichnungen können je nach Lively-Version leicht abweichen. Maßgebl
 
 Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst. Den automatischen Start des Servers beim Login bringt Phase 7 (`scripts/install-autostart.ps1`).
 
+## Widgets
+
+| Typ | Zeigt | Quelle |
+|---|---|---|
+| `weather` | aktuelles Wetter, 12 h, 3 Tage | Open-Meteo |
+| `news` | Schlagzeilen mehrerer Feeds | RSS/Atom |
+| `system` | CPU, RAM, Laufwerke, Uptime | systeminformation, Node `os` |
+| `ports` | wer welchen TCP-Port belegt | `netstat -ano`, `tasklist` |
+| `agents` | Claude-/Codex-Sessions je Projekt, aktiv/inaktiv | Session-Logs, `tasklist` |
+| `external` | beliebige WidgetView-JSONs anderer Projekte | HTTP oder Datei |
+
+Details und Konfiguration stehen in der README des jeweiligen Ordners unter `widgets/<typ>/`.
+
 ## Eigene Widgets
 
 ```bash

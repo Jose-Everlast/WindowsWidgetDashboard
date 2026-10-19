@@ -1,0 +1,71 @@
+{
+  "listeners": [
+    {
+      "port": 3000,
+      "address": "127.0.0.1",
+      "pid": 18708,
+      "process": "node.exe"
+    },
+    {
+      "port": 4700,
+      "address": "127.0.0.1",
+      "pid": 38128,
+      "process": "node.exe",
+      "label": "Dashboard"
+    },
+    {
+      "port": 5037,
+      "address": "127.0.0.1",
+      "pid": 49452,
+      "process": "adb.exe"
+    },
+    {
+      "port": 5173,
+      "address": "0.0.0.0",
+      "pid": 6816,
+      "process": "node.exe"
+    },
+    {
+      "port": 5173,
+      "address": "127.0.0.1",
+      "pid": 11952,
+      "process": "node.exe"
+    },
+    {
+      "port": 23990,
+      "address": "127.0.0.1",
+      "pid": 39328,
+      "process": "Code.exe"
+    },
+    {
+      "port": 42050,
+      "address": "::1",
+      "pid": 41404,
+      "process": "OneDrive.Sync.Service.exe"
+    },
+    {
+      "port": 53934,
+      "address": "127.0.0.1",
+      "pid": 11716,
+      "process": "Code.exe"
+    },
+    {
+      "port": 56276,
+      "address": "127.0.0.1",
+      "pid": 3692,
+      "process": "Code.exe"
+    },
+    {
+      "port": 57026,
+      "address": "0.0.0.0",
+      "pid": 40464,
+      "process": "SpotifyLauncher.exe"
+    },
+    {
+      "port": 58989,
+      "address": "127.0.0.1",
+      "pid": 38556,
+      "process": "Code.exe"
+    }
+  ]
+}

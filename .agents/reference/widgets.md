@@ -14,10 +14,19 @@ Laden, wenn ein Widget angelegt oder geändert wird. Den Vertrag selbst definier
 2. **`signal` weiterreichen** (`fetch(url, { signal })`), wo die Bibliothek es kann. Bibliotheken ohne Signal (rss-parser, systeminformation) sind erlaubt: Der Scheduler bricht nach `timeoutMs` ab und startet keinen neuen Lauf, solange der alte noch hängt.
 3. **Jeden Systemaufruf vor der Nutzung messen.** Auf dem Zielrechner brauchen WMI- bzw. CIM-Aufrufe teils über 90 s: `si.mem()`, `Get-NetTCPConnection`. Bevorzugt werden Node-`os`-APIs und schnelle Kommandos wie `netstat -ano` oder `tasklist /fo csv`. Langsames (> 1 s) wird im Modul gecacht, so wie `fsSize` in `widgets/system/collector.ts`.
 4. **Nur JSON-serialisierbare Payloads** (kein BigInt, keine Zyklen, kein `Date`, sondern ISO-Strings). Der Scheduler lehnt anderes mit `error` ab.
-5. **Teilausfälle tolerieren**, wenn es mehrere Quellen gibt: `Promise.allSettled`, Fehler loggen, erst werfen, wenn alles fehlschlägt (siehe `widgets/news/collector.ts`).
+5. **Teilausfälle tolerieren.** Das gilt für mehrere Quellen (`Promise.allSettled`, siehe `widgets/news/collector.ts`) **und** für viele Einträge einer Quelle: Ordner, Dateien, Feeds werden einzeln mit try/catch bzw. `allSettled` verarbeitet. Ein kaputter Eintrag (ENOTDIR, EACCES, Datei zwischen `stat` und `open` gelöscht) wird übersprungen und geloggt, er bringt nie das ganze Widget zum Scheitern. Hilfsdaten wie Zähler sind optional (`null`), wenn ihre Quelle ausfällt (siehe `widgets/agents/collect.ts`). Geworfen wird erst, wenn die Kernaussage des Widgets nicht mehr möglich ist.
+6. **Datumsangaben in lokaler Zeit nie in 24-h-Schritten berechnen**, immer in Kalendertagen (`new Date(y, m, d - i)`). Wegen der Zeitumstellung haben Tage 23 oder 25 Stunden (siehe `codexDateDirs` in `widgets/agents/parse.ts`).
+7. **Geteilte Systemaufrufe** (z. B. `tasklist` für mehrere Widgets) laufen über `sharedCall` aus `server/lib/win.ts`. So bricht der Abbruch eines Aufrufers nicht die anderen ab, und Fehler werden nicht gecacht.
 
 ## Tests
 
 - `fixtures/<id>.json` ist Pflicht und wird von `widgets/contract.test.ts` gegen `manifest.data` geprüft.
 - Parser werden gegen **aufgezeichnete echte** Antworten getestet (`fixtures/*.xml`, `forecast.json`). Aktualisieren mit `UPDATE_FIXTURES=1 npx vitest run widgets/<id>`.
+- **Fixtures sind echt, aber anonymisiert.** Die Struktur bleibt, persönliche Werte werden ersetzt:
+  - Benutzernamen, private Pfade und Repo-URLs
+  - Namen, die aus Prompts abgeleitet sind (z. B. `slug`), Session-, Tool- und Commit-IDs (Platzhalter `00000000-…`)
+  - LAN-IPs (Dokumentationsbereich `192.0.2.x`)
+  - Nachrichteninhalte (`"…"`)
+
+  Prüfung vor dem Commit: `grep -rnE "<username>|192\.168\.|toolu_[A-Za-z0-9]{3}" widgets/*/fixtures server/lib/fixtures` darf nichts finden.
 - Netzwerkpfade testest du gegen einen echten lokalen `node:http`-Server, nicht gegen gemockte Module (siehe `widgets/external/collector.test.ts`, `widgets/news/collector.test.ts`).

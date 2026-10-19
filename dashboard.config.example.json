@@ -1,12 +1,22 @@
 {
-  "grid": { "columns": 12, "rows": 8, "gapPx": 12, "reserveLeftPx": 120, "reserveTopPx": 0 },
+  "grid": {
+    "columns": 12,
+    "rows": 8,
+    "gapPx": 12,
+    "reserveLeftPx": 120,
+    "reserveTopPx": 0
+  },
   "widgets": [
     {
       "instance": "wetter",
       "type": "weather",
       "x": 0,
       "y": 0,
-      "config": { "lat": 51.96, "lon": 7.63, "label": "Münster" }
+      "config": {
+        "lat": 51.96,
+        "lon": 7.63,
+        "label": "Münster"
+      }
     },
     {
       "instance": "news",
@@ -15,19 +25,54 @@
       "y": 0,
       "config": {
         "feeds": [
-          { "label": "tagesschau", "url": "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml" },
-          { "label": "heise", "url": "https://www.heise.de/rss/heise-top-atom.xml" }
+          {
+            "label": "tagesschau",
+            "url": "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml"
+          },
+          {
+            "label": "heise",
+            "url": "https://www.heise.de/rss/heise-top-atom.xml"
+          }
         ],
         "perFeed": 5
       }
     },
-    { "instance": "system", "type": "system", "x": 9, "y": 0, "config": {} },
+    {
+      "instance": "system",
+      "type": "system",
+      "x": 9,
+      "y": 0,
+      "config": {}
+    },
     {
       "instance": "external-beispiel",
       "type": "external",
       "x": 9,
       "y": 3,
-      "config": { "file": "widgets/external/fixtures/external.json" }
+      "config": {
+        "file": "widgets/external/fixtures/external.json"
+      }
+    },
+    {
+      "instance": "ports",
+      "type": "ports",
+      "x": 0,
+      "y": 3,
+      "config": {
+        "labels": {
+          "3000": "relaunch-radar API",
+          "4700": "Dashboard",
+          "5173": "Vite (relaunch-radar)",
+          "5174": "Vite (Dashboard)"
+        }
+      }
+    },
+    {
+      "instance": "agents",
+      "type": "agents",
+      "x": 3,
+      "y": 3,
+      "config": {}
     }
   ]
 }
