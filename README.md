@@ -1,4 +1,82 @@
-# Agentic Coding Boilerplate
+# windowsDashboard
+
+Ein persönliches Dashboard für Windows 11, das als interaktiver Desktop-Hintergrund läuft. Ein lokaler Node-Server (Hono) sammelt die Daten, eine React-Oberfläche zeigt sie als Kachel-Grid an, und [Lively Wallpaper](https://www.rocksdanister.com/lively/) legt diese Oberfläche auf den Desktop. Ziele und Ausbaustufen beschreibt [PRD.md](PRD.md).
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env
+npm run dev        # UI: http://127.0.0.1:5174 (Proxy auf die API unter :4700)
+```
+
+Betrieb ohne Vite:
+
+```bash
+npm run build && npm start    # UI + API: http://127.0.0.1:4700
+```
+
+## Konfiguration: `dashboard.config.json`
+
+Diese Datei legt fest, welche Widgets wo und mit welchen Einstellungen erscheinen. Fehlt sie beim Start, erzeugt der Server sie aus `dashboard.config.example.json`. Sie ist gitignored, weil sie z. B. deinen Standort enthält.
+
+- **`grid`:**
+  - `columns`, `rows`: Größe des Rasters, Standard 12 × 8
+  - `gapPx`: Abstand zwischen den Kacheln
+  - `reserveLeftPx`, `reserveTopPx`: freier Rand für Desktop-Icons
+- **`widgets[]`:** eine Instanz pro Kachel
+  - `instance`: eindeutige ID in kebab-case
+  - `type`: Ordnername unter `widgets/`
+  - `x`, `y`: Position im Raster, ab 0
+  - `w`, `h`: Größe; ohne Angabe gilt die Standardgröße des Widgets
+  - `title`, `intervalMs`, `enabled`: optional
+  - `config`: Einstellungen, die das jeweilige Widget prüft
+
+Ein Widget-Typ lässt sich mehrfach einbinden, z. B. Wetter für zwei Orte. Ist eine Instanz falsch konfiguriert, zeigt nur diese Kachel einen Fehler.
+
+## Lively einrichten
+
+1. Lively Wallpaper aus dem Microsoft Store installieren.
+2. Den Dashboard-Server starten (`npm start`).
+3. In Lively ein neues Wallpaper hinzufügen („+“ bzw. *Add Wallpaper*), die URL `http://127.0.0.1:4700` eingeben und das Wallpaper anwenden.
+4. In den Lively-Einstellungen unter *Wallpaper* die Eingabe auf **Maus** stellen, damit Klicks im Dashboard ankommen.
+5. In den Lively-Einstellungen den Start mit Windows aktivieren.
+
+Die Menübezeichnungen können je nach Lively-Version leicht abweichen. Maßgeblich ist das [Lively-Wiki](https://github.com/rocksdanister/lively/wiki).
+
+Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst. Den automatischen Start des Servers beim Login bringt Phase 7 (`scripts/install-autostart.ps1`).
+
+## Eigene Widgets
+
+```bash
+npm run new-widget git-status --view status   # generische Darstellung, ohne eigene Oberfläche
+npm run new-widget mein-widget                # mit eigener Widget.tsx
+```
+
+Danach:
+1. In `widgets/<id>/collector.ts` die Funktion `collect()` implementieren.
+2. In `fixtures/<id>.json` eine echte Beispiel-Payload ablegen.
+3. Die Instanz in `dashboard.config.json` eintragen und den Server neu starten.
+
+Ob das Widget den Vertrag erfüllt, prüft `widgets/contract.test.ts`. Den Vertrag selbst beschreibt `shared/widget-contract.ts`.
+
+**Ohne Code:** Jedes lokale Projekt kann ein WidgetView-JSON per HTTP oder als Datei bereitstellen und wird über das Widget `external` eingebunden, siehe [widgets/external/README.md](widgets/external/README.md).
+
+## Scripts
+
+| Script | Zweck |
+|---|---|
+| `npm run dev` | API (`tsx watch`, :4700) und Vite (:5174) |
+| `npm run build` | UI nach `dist/web` bauen |
+| `npm start` | Server, liefert API und gebaute UI aus |
+| `npm test` | Vitest (Unit- und Integrationstests) |
+| `npm run lint` / `npm run typecheck` | ESLint / tsc |
+| `npm run check` | typecheck + lint + test + build |
+| `npm run new-widget <id>` | neues Widget anlegen |
+
+---
+
+## Agentic Coding Workflow (Boilerplate)
 
 A stack-agnostic starting point for building any project with [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview). It contains no application code, only the **AI layer**: slash commands, skills, and a rules template that turn Claude Code into a structured, repeatable engineering workflow.
 

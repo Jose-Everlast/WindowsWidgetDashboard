@@ -1,0 +1,41 @@
+{
+  "view": "list",
+  "items": [
+    {
+      "title": "Reiche verspricht Milliarden für Wasserstoff-Ausbau",
+      "subtitle": "tagesschau",
+      "meta": "14:34",
+      "url": "https://www.tagesschau.de/wirtschaft/reiche-wasserstoff-ausbau-millarden-100.html"
+    },
+    {
+      "title": "Anteil weiblicher Führungskräfte in Deutschland weiterhin niedrig",
+      "subtitle": "tagesschau",
+      "meta": "14:19",
+      "url": "https://www.tagesschau.de/inland/gesellschaft/frauen-anteil-fuehrungspositionen-100.html"
+    },
+    {
+      "title": "Zwölf Migranten bei zwei Bootsunglücken in der Ägäis gestorben",
+      "subtitle": "tagesschau",
+      "meta": "14:07",
+      "url": "https://www.tagesschau.de/ausland/aegaeis-bootsunglueck-100.html"
+    },
+    {
+      "title": "Merz und Macron einigen sich offenbar bei Verbrenner-Ende",
+      "subtitle": "heise",
+      "meta": "16.10.",
+      "url": "https://www.heise.de/news/Ende-des-Verbrenners-Deutschland-und-Frankreich-fuer-Lockerungen-11490190.html?wt_mc=rss.red.ho.top-news.atom.beitrag.beitrag"
+    },
+    {
+      "title": "Tesla Roadster II vorgestellt: Ganz schön abgehoben – Raketentechnik sei Dank",
+      "subtitle": "heise",
+      "meta": "16.10.",
+      "url": "https://www.heise.de/news/Tesla-Roadster-II-vorgestellt-Ganz-schoen-abgehoben-Raketentechnik-sei-Dank-11490167.html?wt_mc=rss.red.ho.top-news.atom.beitrag.beitrag"
+    },
+    {
+      "title": "AEG will der Midea PortaSplit Konkurrenz machen",
+      "subtitle": "heise",
+      "meta": "15.10.",
+      "url": "https://www.heise.de/news/AEG-will-der-Midea-PortaSplit-Konkurrenz-machen-11489814.html?wt_mc=rss.red.ho.top-news.atom.beitrag.beitrag"
+    }
+  ]
+}

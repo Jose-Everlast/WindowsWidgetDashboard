@@ -1,0 +1,17 @@
+{
+  "cpu": {
+    "load": 12.3
+  },
+  "mem": {
+    "usedBytes": 30204882944,
+    "totalBytes": 33307574272
+  },
+  "disks": [
+    {
+      "mount": "C:",
+      "usedBytes": 796963950592,
+      "sizeBytes": 1023008567296
+    }
+  ],
+  "uptimeS": 498852
+}

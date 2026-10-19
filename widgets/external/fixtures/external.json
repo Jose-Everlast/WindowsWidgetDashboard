@@ -1,0 +1,8 @@
+{
+  "view": "status",
+  "items": [
+    { "label": "Dashboard-Server", "state": "ok", "detail": "läuft auf 127.0.0.1:4700" },
+    { "label": "Externes Widget", "state": "idle", "detail": "Beispiel aus widgets/external/fixtures" },
+    { "label": "Eigenes Projekt", "state": "warn", "detail": "WidgetView-JSON bereitstellen und eintragen" }
+  ]
+}

@@ -32,5 +32,9 @@ tests/e2e/screenshots/
 *.db
 *.sqlite
 
+# Dashboard runtime data and personal config (dashboard.config.example.json stays tracked)
+data/
+dashboard.config.json
+
 # Claude Code local settings
 .claude/settings.local.json
