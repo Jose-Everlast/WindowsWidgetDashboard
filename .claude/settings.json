@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npm run -s typecheck 2>&1 | tail -20 >&2; [ \"${PIPESTATUS[0]}\" -eq 0 ] || exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}
