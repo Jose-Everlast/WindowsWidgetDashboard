@@ -18,6 +18,11 @@ Laden, wenn ein Widget angelegt oder geändert wird. Den Vertrag selbst definier
 6. **Datumsangaben in lokaler Zeit nie in 24-h-Schritten berechnen**, immer in Kalendertagen (`new Date(y, m, d - i)`). Wegen der Zeitumstellung haben Tage 23 oder 25 Stunden (siehe `codexDateDirs` in `widgets/agents/parse.ts`).
 7. **Geteilte Systemaufrufe** (z. B. `tasklist` für mehrere Widgets) laufen über `sharedCall` aus `server/lib/win.ts`. So bricht der Abbruch eines Aufrufers nicht die anderen ab, und Fehler werden nicht gecacht.
 8. **Push nur als Auslöser.** Wer Live-Updates braucht, implementiert `subscribe(ctx)` und ruft bei Änderungen nur `ctx.refresh()` auf. Daten werden nie per Push übergeben, sie kommen immer über `collect()`, damit Prüfung, Timeout und Statuslogik nur einmal existieren. Ein sinnvolles `intervalMs` bleibt als Sicherheitsnetz. SSE-Quellen nutzen `subscribeSSE` aus `server/lib/sse.ts` (wirft nie, verbindet sich selbst neu). Fehler werden nur beim ersten Auftreten nach einer funktionierenden Verbindung geloggt, nicht bei jedem Retry. Testserver für SSE müssen `res.flushHeaders()` aufrufen, wenn sie beim Verbinden nichts senden, sonst wartet `fetch` ewig auf die Header.
+9. **Mehrere Konten bzw. Teilquellen in einer Instanz** (Muster `widgets/mail/collect.ts`):
+   - Jede Teilquelle bekommt ihren eigenen Status in der Payload (`ok | unconfigured | error`, mit Grund und optional einem Login-Link).
+   - `manifest.env` nur für Variablen, ohne die **gar nichts** geht; sonst würde ein fehlendes Konto die ganze Kachel lahmlegen.
+   - Geworfen wird erst, wenn alle eingerichteten Teilquellen scheitern.
+10. **Netzwerk-Clients ohne `AbortSignal`** (z. B. imapflow): bei `signal.abort` die Verbindung hart schließen, einen `error`-Listener registrieren (ein unbehandeltes `error`-Event beendet den Prozess) und knappe eigene Timeouts setzen statt der Bibliotheks-Defaults.
 
 ## Tests
 

@@ -14,6 +14,8 @@ export const config = {
   host: process.env.HOST || "127.0.0.1",
   port: Number(process.env.PORT || 4700),
   distDir: join(ROOT, "dist", "web"),
+  // gitignored: OAuth tokens and other runtime data
+  dataDir: join(ROOT, "data"),
   widgetsDir: join(ROOT, "widgets"),
   dashboardConfigPath: join(ROOT, "dashboard.config.json"),
   dashboardExamplePath: join(ROOT, "dashboard.config.example.json"),

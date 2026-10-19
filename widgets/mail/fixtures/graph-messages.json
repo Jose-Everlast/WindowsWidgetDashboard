@@ -1,0 +1,23 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users('00000000-0000-0000-0000-000000000000')/mailFolders('inbox')/messages(id,from,subject,receivedDateTime,isRead,webLink)",
+  "value": [
+    {
+      "@odata.etag": "W/\"AAAAAA==\"",
+      "id": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1",
+      "receivedDateTime": "2026-10-19T07:30:00Z",
+      "subject": "Betreff 3",
+      "isRead": false,
+      "webLink": "https://outlook.live.com/owa/?ItemID=AAAAAAAAAAAAAAAA1&exvsurl=1&viewmodel=ReadMessageItem",
+      "from": { "emailAddress": { "name": "Absender 3", "address": "absender3@example.com" } }
+    },
+    {
+      "@odata.etag": "W/\"AAAAAB==\"",
+      "id": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+      "receivedDateTime": "2026-10-17T12:00:00Z",
+      "subject": "",
+      "isRead": true,
+      "webLink": "https://outlook.live.com/owa/?ItemID=AAAAAAAAAAAAAAAA2&exvsurl=1&viewmodel=ReadMessageItem",
+      "from": { "emailAddress": { "name": "absender4@example.com", "address": "absender4@example.com" } }
+    }
+  ]
+}

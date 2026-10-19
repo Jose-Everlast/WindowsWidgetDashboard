@@ -1,0 +1,123 @@
+{
+  "accounts": [
+    {
+      "id": "gmail-privat",
+      "label": "Gmail privat",
+      "provider": "gmail",
+      "color": "#60a5fa",
+      "status": "ok",
+      "unread": 2,
+      "email": "jose@example.com"
+    },
+    {
+      "id": "gmail-agentur",
+      "label": "Gmail Agentur",
+      "provider": "gmail",
+      "color": "#ff0000",
+      "status": "ok",
+      "unread": 2,
+      "email": "agentur@example.com"
+    },
+    {
+      "id": "outlook",
+      "label": "Outlook",
+      "provider": "outlook",
+      "color": "#34d399",
+      "status": "ok",
+      "unread": 1,
+      "email": null
+    },
+    {
+      "id": "imap",
+      "label": "IMAP",
+      "provider": "imap",
+      "color": "#fbbf24",
+      "status": "ok",
+      "unread": 1,
+      "email": "jose@example.com"
+    }
+  ],
+  "messages": [
+    {
+      "id": "outlook:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1",
+      "account": "outlook",
+      "from": "Absender 3",
+      "subject": "Betreff 3",
+      "receivedAt": "2026-10-19T07:30:00.000Z",
+      "unread": true,
+      "url": "https://outlook.live.com/owa/?ItemID=AAAAAAAAAAAAAAAA1&exvsurl=1&viewmodel=ReadMessageItem"
+    },
+    {
+      "id": "gmail-privat:18f0000000000002",
+      "account": "gmail-privat",
+      "from": "Absender 1",
+      "subject": "Betreff 1",
+      "receivedAt": "2026-10-19T06:55:00.000Z",
+      "unread": true,
+      "url": "https://mail.google.com/mail/u/jose%40example.com/#all/18f0000000000002"
+    },
+    {
+      "id": "gmail-agentur:18f0000000000002",
+      "account": "gmail-agentur",
+      "from": "Absender 1",
+      "subject": "Betreff 1",
+      "receivedAt": "2026-10-19T06:55:00.000Z",
+      "unread": true,
+      "url": "https://mail.google.com/mail/u/agentur%40example.com/#all/18f0000000000002"
+    },
+    {
+      "id": "imap:102",
+      "account": "imap",
+      "from": "Absender 6",
+      "subject": "Betreff 6 über",
+      "receivedAt": "2026-10-19T06:12:00.000Z",
+      "unread": true,
+      "url": "https://webmail.example.com"
+    },
+    {
+      "id": "imap:103",
+      "account": "imap",
+      "from": "absender7@example.com",
+      "subject": "(kein Betreff)",
+      "receivedAt": "2026-10-18T18:40:00.000Z",
+      "unread": false,
+      "url": "https://webmail.example.com"
+    },
+    {
+      "id": "gmail-privat:18f0000000000001",
+      "account": "gmail-privat",
+      "from": "absender2@example.com",
+      "subject": "Betreff 2 – Grüße",
+      "receivedAt": "2026-10-18T17:02:11.000Z",
+      "unread": false,
+      "url": "https://mail.google.com/mail/u/jose%40example.com/#all/18f00000000000a1"
+    },
+    {
+      "id": "gmail-agentur:18f0000000000001",
+      "account": "gmail-agentur",
+      "from": "absender2@example.com",
+      "subject": "Betreff 2 – Grüße",
+      "receivedAt": "2026-10-18T17:02:11.000Z",
+      "unread": false,
+      "url": "https://mail.google.com/mail/u/agentur%40example.com/#all/18f00000000000a1"
+    },
+    {
+      "id": "outlook:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+      "account": "outlook",
+      "from": "absender4@example.com",
+      "subject": "(kein Betreff)",
+      "receivedAt": "2026-10-17T12:00:00.000Z",
+      "unread": false,
+      "url": "https://outlook.live.com/owa/?ItemID=AAAAAAAAAAAAAAAA2&exvsurl=1&viewmodel=ReadMessageItem"
+    },
+    {
+      "id": "imap:101",
+      "account": "imap",
+      "from": "Absender 5",
+      "subject": "Betreff 5",
+      "receivedAt": "2026-10-16T07:00:00.000Z",
+      "unread": false,
+      "url": "https://webmail.example.com"
+    }
+  ]
+}

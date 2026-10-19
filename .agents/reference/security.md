@@ -13,7 +13,13 @@ Gilt für alles unter `server/` und für jeden Widget-Collector. Das Dashboard l
    - öffnen über `rundll32 url.dll,FileProtocolHandler`, nie über `cmd /c start` (Injection mit `&`) oder `explorer.exe` (eigene Parse-Regeln für Kommas und Switches)
 5. **Kein HTML aus fremden Daten rendern.** Views stellen Text dar (`whitespace-pre-wrap`), es gibt kein `dangerouslySetInnerHTML`.
 6. **Secrets nur in `.env`**, nicht in `dashboard.config.json` (die ist zwar gitignored, wird aber per `/api/layout` ausgeliefert).
+7. **OAuth** (`server/auth/`, `server/routes/auth.ts`):
+   - Pflicht sind PKCE S256 und ein `state`, der nur einmal gilt und nach 10 Minuten abläuft. Ein unbekannter `state` bzw. einer vom falschen Provider wird abgelehnt.
+   - Callback-Antworten gehen nur als `text/plain` mit `cache-control: no-store` und `referrer-policy: no-referrer` raus, denn Code und State stehen in der URL.
+   - Tokens liegen nur in `data/tokens/<konto>.json`: atomar geschrieben, Konto-ID als kebab-case geprüft (kein Path Traversal), nie geloggt, nie über `/api` ausgeliefert. Fehlermeldungen enthalten keine Request-Parameter.
+   - Es gibt nur Lese-Scopes. IMAP öffnet ausschließlich per `EXAMINE` und holt nie `BODY[]`; `widgets/mail/collector.test.ts` prüft das.
+   - Microsoft: beim Token-Request keinen `Origin`-Header senden (sonst gilt er als SPA-Request, mit 24-h-Tokens). Den rotierten Refresh-Token immer persistieren.
 
 ## Tests
 
-Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).
+Die OAuth-Routen haben eigene Tests in `server/routes/auth.test.ts` (state single use, Provider-Mismatch, Text-Antworten, Host-Guard, kein SPA-Fallback). Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).

@@ -1,6 +1,11 @@
 import { spawn } from "node:child_process";
+import { join } from "node:path";
 import { serve } from "@hono/node-server";
+import { gmailProfile } from "../widgets/mail/gmail";
 import { createApp } from "./app";
+import { oauthAccounts } from "./auth/accounts";
+import { createPendingStore } from "./auth/pending";
+import { tokenStoreFor } from "./auth/token-store";
 import { createCache } from "./cache";
 import { loadDashboardConfig } from "./config-file";
 import { assertLocalHost, config } from "./env";
@@ -42,6 +47,22 @@ async function main() {
     allowedHosts: [...localHosts],
     allowedOrigins: localHosts.map(h => `http://${h}`),
     distDir: config.distDir,
+    auth: {
+      port: config.port,
+      env: process.env,
+      accounts: oauthAccounts(instances),
+      // Same store as the mail collector: shared per-account refresh locks.
+      tokens: tokenStoreFor(join(config.dataDir, "tokens")),
+      pending: createPendingStore(),
+      lookupEmail: (provider, accessToken, signal) =>
+        provider === "google" ? gmailProfile({ token: async () => accessToken, signal }) : Promise.resolve(null),
+      onConnected: () => {
+        for (const s of cache.all()) {
+          if (s.type !== "mail") continue;
+          scheduler.refresh(s.instance).catch(err => logError("auth", err instanceof Error ? err.message : String(err)));
+        }
+      },
+    },
   });
 
   const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, info => {

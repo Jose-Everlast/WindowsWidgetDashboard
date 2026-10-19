@@ -15,7 +15,10 @@ export default defineConfig(({ mode }) => {
       host: "127.0.0.1",
       port: 5174, // 5173 is taken by relaunch-radar's Vite
       strictPort: true,
-      proxy: { "/api": { target: api, changeOrigin: false } },
+      proxy: {
+        "/api": { target: api, changeOrigin: false },
+        "/auth": { target: api, changeOrigin: false },
+      },
       fs: { allow: [".."] }, // widgets/*/Widget.tsx live outside the web root
     },
     build: { outDir: "../dist/web", emptyOutDir: true },

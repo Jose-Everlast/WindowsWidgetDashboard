@@ -29,8 +29,8 @@ export function safeRelPath(urlPath: string): string | null {
   return decoded.replace(/\\/g, "/").replace(/^\/+/, "");
 }
 
-// The API keeps its JSON 404.
-const RESERVED = /^\/api(\/|$)/;
+// API and OAuth routes keep their own JSON 404.
+const RESERVED = /^\/(api|auth)(\/|$)/;
 
 export function dashboardRoutes(distDir: string): Hono {
   const app = new Hono();

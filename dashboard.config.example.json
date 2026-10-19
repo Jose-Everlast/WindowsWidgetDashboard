@@ -48,7 +48,7 @@
       "instance": "external-beispiel",
       "type": "external",
       "x": 9,
-      "y": 3,
+      "y": 6,
       "config": {
         "file": "widgets/external/fixtures/external.json"
       }
@@ -80,6 +80,39 @@
       "x": 6,
       "y": 3,
       "config": {}
+    },
+    {
+      "instance": "mail",
+      "type": "mail",
+      "x": 9,
+      "y": 3,
+      "config": {
+        "accounts": [
+          {
+            "id": "gmail-privat",
+            "provider": "gmail",
+            "label": "Gmail privat"
+          },
+          {
+            "id": "gmail-agentur",
+            "provider": "gmail",
+            "label": "Gmail Agentur"
+          },
+          {
+            "id": "outlook",
+            "provider": "outlook",
+            "label": "Outlook"
+          },
+          {
+            "id": "imap",
+            "provider": "imap",
+            "label": "IMAP",
+            "host": "imap.example.com",
+            "user": "jose@example.com",
+            "webmailUrl": "https://webmail.example.com"
+          }
+        ]
+      }
     }
   ]
 }

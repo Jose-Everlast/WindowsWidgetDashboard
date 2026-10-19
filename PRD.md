@@ -164,7 +164,8 @@ server/
   scheduler.ts        # Pollt Instanzen: Timeout, kein Overlap, Statuslogik
   widgets/loader.ts   # findet widgets/*/ und importiert manifest.ts + collector.ts
   lib/win.ts          # schnelle Windows-Kommandos (netstat, tasklist) – kein WMI/CIM, siehe Risiken
-  auth/google.ts, auth/microsoft.ts
+  auth/               # OAuth per fetch + PKCE: providers.ts (Google, Microsoft), token-store.ts, pending.ts
+  routes/auth.ts      # /auth/<provider>/start und /callback
   ai/snapshot.ts      # baut aus dem Cache einen kompakten Kontext-Snapshot (ohne Mail-Texte)
   ai/briefing.ts      # ruft `claude -p` auf, speichert das Ergebnis in data/briefing.json
   ai/chat.ts          # OpenAI-Streaming, Verlauf nur im Speicher
@@ -336,8 +337,7 @@ Darauf baut das eingebaute Widget **`external`** auf. Jedes lokale Projekt kann 
 **Bibliotheken für die Datenquellen:**
 - `systeminformation` – System
 - `rss-parser` – News
-- `googleapis` bzw. `@googleapis/gmail` – Gmail
-- `@azure/msal-node` + `fetch` gegen Graph – Outlook
+- `fetch` + PKCE (ohne SDK) – OAuth für Google und Microsoft, Gmail-REST und Microsoft Graph; Endpunkte sind injizierbar und werden gegen lokale Testserver geprüft
 - `imapflow` – IMAP
 - `fast-xml-parser` – Toast-XML
 - `openai` (offizielles SDK) – Chat und Costs-API
@@ -350,7 +350,7 @@ Die genauen Versionen werden beim Setup in Phase 1 auf die aktuelle stabile Vers
 - **Netzwerk:** Der Server bindet ausschließlich an `127.0.0.1`. Ein Login-System gibt es im MVP nicht, weil nur der lokale Nutzer zugreifen kann.
 - **Nur Lese-Scopes:** `gmail.readonly`, `Mail.Read` und `offline_access`. IMAP wird mit `readOnly` bzw. `EXAMINE` geöffnet, damit Mails nicht als gelesen markiert werden.
 - **Tokens:** OAuth-Refresh-Tokens liegen in `data/tokens/*.json`. `data/` ist gitignored. Eine Verschlüsselung über die Windows-DPAPI ist eine spätere Option.
-- **OAuth-Flow:** Loopback-Redirect auf `http://127.0.0.1:4700/auth/<provider>/callback`. Dafür braucht es:
+- **OAuth-Flow:** Authorization Code mit PKCE (S256) und einmaligem `state` (10 min gültig). Loopback-Redirect auf `http://127.0.0.1:4700/auth/google/callback` bzw. `http://localhost:4700/auth/microsoft/callback`; Microsoft erlaubt `http://localhost` im Portal und ignoriert dort den Port. Dafür braucht es:
   - ein Google-Cloud-Projekt mit OAuth-Client vom Typ „Desktop“
   - eine Azure-App-Registrierung für private Microsoft-Konten
 - **Fremde Webseiten** (siehe `.agents/reference/security.md`):
@@ -367,7 +367,7 @@ Die genauen Versionen werden beim Setup in Phase 1 auf die aktuelle stabile Vers
   HOST=127.0.0.1
   GOOGLE_CLIENT_ID= / GOOGLE_CLIENT_SECRET=
   MS_CLIENT_ID= / MS_TENANT=consumers
-  IMAP_HOST= / IMAP_PORT=993 / IMAP_USER= / IMAP_PASSWORD= / IMAP_WEBMAIL_URL=
+  IMAP_PASSWORD=                           # Host, Port, User, Webmail-URL stehen in der Instanz-Config
   OPENAI_API_KEY= / OPENAI_MODEL=          # Chat; Modell frei wählbar
   OPENAI_ADMIN_KEY=                        # optional, nur für die Costs-API
   CLAUDE_BIN=claude / BRIEFING_TIME=07:30
@@ -395,8 +395,8 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
 | POST | `/api/chat` | Body `{ message, useContext }`; Antwort ist ein SSE-Stream aus `delta`-Events, am Ende `done` |
 | DELETE | `/api/chat` | leert den Chat-Verlauf |
 | GET | `/api/stream` | SSE; `snapshot` (alle `WidgetState`) beim Verbinden, `widget` bei jeder Änderung, `ping` alle 15 s |
-| GET | `/auth/google/start`, `/auth/microsoft/start` | Redirect zum OAuth-Consent |
-| GET | `/auth/google/callback`, `/auth/microsoft/callback` | speichert die Tokens und leitet auf `/` um |
+| GET | `/auth/google/start?account=<id>`, `/auth/microsoft/start?account=<id>` | Redirect zum OAuth-Consent für ein konfiguriertes Konto |
+| GET | `/auth/google/callback`, `/auth/microsoft/callback` | speichert die Tokens und antwortet mit einer Textseite („Verbunden …“); läuft im Standardbrowser, nicht in Lively |
 | GET | `/*` | statisches `web/dist` (SPA-Fallback auf `index.html`) |
 
 **Beispiel `GET /api/widgets/ports`:**
@@ -424,7 +424,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
     "accounts": [
       { "id": "gmail", "label": "Gmail", "status": "ok", "unread": 3 },
       { "id": "outlook", "label": "Outlook", "status": "unconfigured", "unread": null,
-        "action": "/auth/microsoft/start" },
+        "action": "/auth/microsoft/start?account=outlook" },
       { "id": "imap", "label": "IMAP", "status": "ok", "unread": 1 }
     ],
     "messages": [
@@ -481,7 +481,7 @@ Jede Phase ist ein eigener Zyklus aus `/plan-feature` → `/execute` → `/valid
 
 **Validierung:** `npm run check` grün (91 Tests); `127.0.0.1:4700` zeigt vier Widgets mit echten Daten. Offen: Lively-Test durch den Nutzer.
 
-### Phase 2 – System: Ports & Claude-Agents (≈ 1 Session)
+### Phase 2 – System: Ports & Claude-Agents (≈ 1 Session) ✔ erledigt
 - ✅ `server/lib/win.ts`: `netstat -ano` und `tasklist /fo csv` ausführen und parsen (kein PowerShell/WMI, siehe Messung in Abschnitt 7)
 - ✅ Ports-Collector und -Widget
 - ✅ Agents-Collector (Session-Logs von Claude und Codex mit `cwd` und mtime, dazu laufende Prozesse über `tasklist`) und -Widget
@@ -494,7 +494,7 @@ Jede Phase ist ein eigener Zyklus aus `/plan-feature` → `/execute` → `/valid
 
 **Validierung:** relaunch-radar starten und stoppen; beide Modi werden korrekt angezeigt.
 
-### Phase 4 – Mail (≈ 1–2 Sessions)
+### Phase 4 – Mail (≈ 1–2 Sessions) ✔ umgesetzt (Abgleich mit echten Konten offen)
 - ✅ Gmail-OAuth und -Collector, Microsoft-OAuth und Graph-Collector, IMAP-Collector, gemeinsames Widget
 
 **Validierung:** Ungelesen-Zähler im Abgleich mit dem Webmail. Ohne Credentials erscheint `unconfigured`.

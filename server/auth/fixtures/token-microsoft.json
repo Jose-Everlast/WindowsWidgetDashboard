@@ -1,0 +1,8 @@
+{
+  "token_type": "Bearer",
+  "scope": "https://graph.microsoft.com/Mail.Read",
+  "expires_in": 3600,
+  "ext_expires_in": 3600,
+  "access_token": "EwB4REDACTED",
+  "refresh_token": "M.C5_REDACTED-ROTATED"
+}
