@@ -134,7 +134,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 ┌──────────────── Lively Wallpaper (Desktop-Ebene) ────────────────┐
 │  lädt http://127.0.0.1:4700                                      │
 │  ┌──────────── web/ (React, Vite-Build) ───────────┐             │
-│  │ Hub-Grid → Widgets → useWidget(id) ← SSE /api/stream          │
+│  │ Hub-Grid → WidgetFrame → DashboardProvider ← SSE /api/stream  │
 │  └─────────────────────────────────────────────────┘             │
 └──────────────────────────────────────────────────────────────────┘
                  │ REST + SSE
@@ -144,8 +144,8 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 │              mail(gmail|outlook|imap), messages(wpn), aiUsage    │
 │  AI: briefing (Snapshot → claude -p), chat (Snapshot → OpenAI)   │
 └──────────────────────────────────────────────────────────────────┘
-      │ HTTPS/IMAP          │ PowerShell / fs / node:sqlite   │ child_process
-  Open-Meteo, RSS,     Get-NetTCPConnection, Win32_Process,  claude -p
+      │ HTTPS/IMAP          │ child_process / fs / node:sqlite │ child_process
+  Open-Meteo, RSS,     netstat -ano, tasklist /fo csv,       claude -p
   Gmail, Graph, IMAP,  ~/.claude/projects, ~/.codex/sessions,
   OpenAI API           wpndatabase.db, relaunch-radar/logs
   relaunch-radar API
@@ -155,27 +155,31 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 
 ```
 server/
-  index.ts            # Hono-App, Static-Serving von web/dist, Start des Schedulers
-  config.ts           # zod-validierte .env, wirft beim Start, wenn Pflichtwerte fehlen
+  index.ts            # Bootstrap: Config → Loader → Scheduler → serve(); openUrl über rundll32
+  app.ts              # createApp(deps): Guard, Routen, Static, Fehlerbehandlung
+  env.ts              # .env laden (process.loadEnvFile), nur localhost als HOST
+  guard.ts            # Host-Check (DNS-Rebinding), JSON + Origin für ändernde Requests
+  config-file.ts      # dashboard.config.json laden/prüfen, beim ersten Start aus dem Beispiel
   cache.ts            # In-Memory-Cache + Event-Emitter für SSE
-  scheduler.ts        # Pollt Collectors nach ihrem Intervall
-  widgets/loader.ts   # findet widgets/*/ und registriert die Collectors
-  lib/powershell.ts   # runPs(script): Promise<JSON>; zentraler PowerShell-Aufruf
+  scheduler.ts        # Pollt Instanzen: Timeout, kein Overlap, Statuslogik
+  widgets/loader.ts   # findet widgets/*/ und importiert manifest.ts + collector.ts
+  lib/win.ts          # schnelle Windows-Kommandos (netstat, tasklist) – kein WMI/CIM, siehe Risiken
   auth/google.ts, auth/microsoft.ts
   ai/snapshot.ts      # baut aus dem Cache einen kompakten Kontext-Snapshot (ohne Mail-Texte)
   ai/briefing.ts      # ruft `claude -p` auf, speichert das Ergebnis in data/briefing.json
   ai/chat.ts          # OpenAI-Streaming, Verlauf nur im Speicher
 web/
-  src/hub/            # Grid, Layout, Offline-Banner, WidgetFrame (Titel, Status, Fehler)
+  src/hub/            # DashboardProvider (Layout, SSE, Watchdog), Hub-Grid, WidgetFrame, Offline-Banner
   src/hub/registry.ts # import.meta.glob('../../../widgets/*/Widget.tsx')
-  src/views/          # generische Renderer für externe Widgets (stat, list, progress, …)
-  src/lib/useWidget.ts
+  src/views/          # generische Renderer (stat, list, progress, status, markdown)
 shared/
-  widget-contract.ts  # defineWidget(), WidgetManifest, WidgetState, WidgetView
+  widget-contract.ts  # defineManifest/defineCollector, WidgetManifest, WidgetState, WidgetView
+  api.ts              # Response-Typen von /api/*
 widgets/              # EIN Ordner pro Widget, siehe 6.1
   weather/ news/ system/ ports/ agents/ relaunch-radar/ mail/ messages/
   ai-usage/ briefing/ chat/ external/
-dashboard.config.json # welche Widget-Instanzen, wo, mit welcher Konfiguration
+dashboard.config.json # welche Widget-Instanzen, wo, mit welcher Konfiguration (gitignored;
+                      # dashboard.config.example.json ist die getrackte Vorlage)
 scripts/
   new-widget.ts       # npm run new-widget <id>: legt das Grundgerüst an
   install-autostart.ps1
@@ -189,41 +193,44 @@ Jedes Widget, auch jedes der elf MVP-Widgets, ist ein in sich geschlossener Ordn
 **Ordneraufbau:**
 ```
 widgets/<id>/
-  manifest.ts        # Metadaten + Konfigurationsschema (Pflicht)
-  schema.ts          # zod-Schema der Payload (Pflicht)
+  manifest.ts        # Metadaten, Config- und Payload-Schema (Pflicht; rein, auch im Browser importiert)
   collector.ts       # Server: holt die Daten (Pflicht)
   Widget.tsx         # UI: rendert die Payload (optional, sonst generischer View)
-  collector.test.ts  # Tests gegen fixtures/
-  fixtures/          # echte, anonymisierte Beispieldaten
+  parse.ts           # optional: reine Helfer, die Collector und Widget.tsx teilen
+  *.test.ts          # Tests gegen fixtures/
+  fixtures/<id>.json # Pflicht: echte Beispiel-Payload, geprüft vom Vertragstest
   README.md          # Einrichtung: Keys, OAuth, Voraussetzungen
 ```
 
-**Manifest und Collector:**
+Manifest und Collector liegen bewusst in getrennten Dateien. Die UI importiert nie den Collector, so landen Server-Bibliotheken wie `systeminformation` nicht im Browser-Bundle.
+
+**Manifest und Collector** (verbindlich ist `shared/widget-contract.ts`):
 ```ts
-// shared/widget-contract.ts (Auszug)
-export interface WidgetManifest<C extends z.ZodTypeAny = z.ZodTypeAny> {
+export interface WidgetManifest<C extends z.ZodType, T extends z.ZodType> {
   id: string;                         // "weather" – eindeutig, = Ordnername
   title: string;                      // Standard-Titel im Rahmen
   version: number;                    // erhöhen bei inkompatibler Payload
   category: "daily" | "comms" | "projects" | "system" | "ai";
-  defaultSize: { w: 1|2|3|4; h: 1|2|3|4 };  // Grid-Einheiten
-  intervalMs: number | "push";        // Poll-Intervall oder Push (SSE/Datei-Watch)
+  defaultSize: { w: 1..6; h: 1..4 };  // Grid-Einheiten
+  intervalMs: number;                 // Poll-Intervall; eine Instanz kann es überschreiben
+  timeoutMs?: number;                 // Default 20 s
   config: C;                          // zod-Schema der Instanz-Konfiguration
+  data: T;                            // zod-Schema der Payload
   env?: string[];                     // benötigte .env-Variablen → sonst "unconfigured"
   capabilities: Array<"network" | "fs" | "powershell" | "process" | "ai">;
-  view?: WidgetViewType;              // generischer Renderer, falls kein Widget.tsx
+  view?: WidgetViewType;              // Hinweis: Payload ist eine generische WidgetView
 }
 
 export interface WidgetCollector<C, T> {
-  collect(ctx: { config: C; env: Env; signal: AbortSignal; log: Logger }): Promise<T>;
-  subscribe?(ctx, emit: (data: T) => void): () => void;  // für "push"
-  actions?: Record<string, (ctx, input: unknown) => Promise<unknown>>; // z. B. "refresh", "run"
+  collect(ctx: { config: C; env; signal: AbortSignal; log }): Promise<T>;
+  actions?: Record<string, (ctx, input: unknown) => Promise<unknown>>; // "refresh" ist eingebaut
 }
 
-export const defineWidget = <C, T>(w: {
-  manifest: WidgetManifest; schema: z.ZodType<T>; collector: WidgetCollector<C, T>;
-}) => w;
+// manifest.ts:  export const manifest = defineManifest({ ... });
+// collector.ts: export const collector = defineCollector(manifest, { async collect(ctx) { ... } });
 ```
+
+Push-Collectors (`subscribe`) kommen erst mit Phase 3 (relaunch-radar-SSE) hinzu.
 
 **Instanzen statt Singletons:** `dashboard.config.json` legt fest, welche Instanzen eines Widget-Typs es gibt, wo sie im Grid liegen und wie sie konfiguriert sind. Derselbe Typ lässt sich also mehrfach nutzen, z. B. Wetter für zwei Orte oder News mit unterschiedlichen Feeds:
 ```json
@@ -280,10 +287,12 @@ Darauf baut das eingebaute Widget **`external`** auf. Jedes lokale Projekt kann 
 | Widget | Quelle | Intervall | Inhalt |
 |---|---|---|---|
 | **Wetter** | Open-Meteo (`api.open-meteo.com`, kein Key) | 10 min | Temperatur, Zustand, Regenwahrscheinlichkeit, 12-h-Verlauf, 3-Tage-Vorschau |
-| **News** | RSS über `rss-parser`, Feeds aus `NEWS_FEEDS` | 15 min | Top-Schlagzeilen je Feed, Quelle, Zeit, Link |
+| **News** | RSS/Atom über `rss-parser`, Feeds aus der Instanz-Config | 15 min | Top-Schlagzeilen je Feed, Quelle, Zeit, Link |
 | **System** | `systeminformation` | 5 s | CPU-Last, RAM belegt/gesamt, Datenträger frei, Uptime |
-| **Ports** | `Get-NetTCPConnection -State Listen` + `Get-CimInstance Win32_Process` | 10 s | Port, Adresse, PID, Prozessname, Projektordner (aus der Kommandozeile abgeleitet); gruppiert nach Dev-Ports und System |
-| **Claude-Agents** | `Win32_Process` (Kommandozeile enthält `claude` bzw. `codex`) + mtime der `*.jsonl` unter `~/.claude/projects/` | 10 s | Agent-Typ, Projekt, PID, Laufzeit, letzte Aktivität; „inaktiv“ ab einem Schwellwert |
+| **Ports** | `netstat -ano` (LISTENING) + `tasklist /fo csv` (PID → Prozessname) | 10 s | Port, Adresse, PID, Prozessname; gruppiert nach Dev-Ports und System |
+| **Claude-Agents** | Session-Logs `~/.claude/projects/**/*.jsonl` und `~/.codex/sessions/**/*.jsonl` (mtime + Feld `cwd`), dazu `tasklist` für die laufenden `claude`/`codex`-Prozesse | 10 s | Agent-Typ, Projekt (aus `cwd`), letzte Aktivität, aktiv/inaktiv ab einem Schwellwert, Anzahl laufender Prozesse |
+
+**Gemessen am 2026-10-19 auf dem Zielrechner:** `netstat -ano` 0,4 s, `tasklist` 1 s, `Get-Process` 13 s, `Get-CimInstance Win32_Process` 39 s, `Get-NetTCPConnection` 49 s, `si.mem()` 94 s. WMI/CIM-basierte Abfragen scheiden für Intervalle von 5–10 s deshalb aus. Projektordner kommen aus dem `cwd` der Session-Logs statt aus Prozess-Kommandozeilen.
 | **relaunch-radar** | `GET /api/overview`, `/api/jobs/running`, SSE `/api/notifications/stream`; Fallback `logs/notifications.json` | live / 30 s | Autopilot-Status, laufende Jobs, Warteschlangenlänge, letzte 5 Benachrichtigungen; Badge „API offline – Dateimodus“ |
 | **Mail** | Gmail API, Microsoft Graph, `imapflow` | 2 min | Ungelesen-Zähler pro Konto, letzte ~15 Mails gemischt (Absender, Betreff, Zeit, Konto-Farbe), Link ins Webmail |
 | **Messenger** | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | 30 s | letzte Benachrichtigungen von WhatsApp, Teams, Discord, Lark und Slack: App, Absender bzw. Titel, Text, Zeit |
@@ -344,35 +353,39 @@ Die genauen Versionen werden beim Setup in Phase 1 auf die aktuelle stabile Vers
 - **OAuth-Flow:** Loopback-Redirect auf `http://127.0.0.1:4700/auth/<provider>/callback`. Dafür braucht es:
   - ein Google-Cloud-Projekt mit OAuth-Client vom Typ „Desktop“
   - eine Azure-App-Registrierung für private Microsoft-Konten
-- **Konfiguration:** `.env`, validiert in `server/config.ts`. Fehlen optionale Integrationen, wird das jeweilige Widget `unconfigured`. Fehlen Pflichtwerte, bricht der Start mit einer klaren Meldung ab.
+- **Fremde Webseiten** (siehe `.agents/reference/security.md`):
+  - `server/guard.ts` beantwortet nur Requests mit eigenem `Host`, das schützt gegen DNS-Rebinding.
+  - Ändernde `/api`-Requests brauchen `content-type: application/json` und, falls gesetzt, eine erlaubte `Origin`.
+  - Links aus Feeds und Mails öffnet `POST /api/open` nur normalisiert über `rundll32 url.dll,FileProtocolHandler`.
+- **Konfiguration:**
+  - Secrets und Server-Einstellungen stehen in `.env` (`server/env.ts`).
+  - Nicht geheime Widget-Einstellungen wie Standort oder Feeds stehen in `dashboard.config.json` und werden pro Instanz gegen `manifest.config` geprüft.
+  - Fehlen in `manifest.env` genannte Variablen, wird das Widget `unconfigured`. Ist die Config-Datei kaputt, bricht der Start mit einer klaren Meldung ab.
 - **Neue Variablen in `.env.example`** (jeweils mit Kommentar, woher der Wert kommt):
   ```
   PORT=4700
   HOST=127.0.0.1
-  WEATHER_LAT= / WEATHER_LON= / WEATHER_LABEL=
-  NEWS_FEEDS=https://www.tagesschau.de/xml/rss2,https://www.heise.de/rss/heise-atom.xml
   GOOGLE_CLIENT_ID= / GOOGLE_CLIENT_SECRET=
   MS_CLIENT_ID= / MS_TENANT=consumers
   IMAP_HOST= / IMAP_PORT=993 / IMAP_USER= / IMAP_PASSWORD= / IMAP_WEBMAIL_URL=
-  RELAUNCH_RADAR_URL=http://127.0.0.1:3000
-  RELAUNCH_RADAR_DIR=C:\_repos\relaunch-radar
-  AGENT_IDLE_MINUTES=15
   OPENAI_API_KEY= / OPENAI_MODEL=          # Chat; Modell frei wählbar
   OPENAI_ADMIN_KEY=                        # optional, nur für die Costs-API
   CLAUDE_BIN=claude / BRIEFING_TIME=07:30
   AI_CONTEXT_ENABLED=true                  # Dashboard-Snapshot an KI senden
   ```
+  relaunch-radar-URL/-Pfad und der Agent-Inaktivitäts-Schwellwert sind keine Secrets und gehören in die Instanz-Config der jeweiligen Widgets.
 - **KI-Datenschutz:** Der Snapshot enthält keine Mail- oder Nachrichtentexte, nur Absender, Betreff bzw. Titel, Zähler und Status. Messenger-Vorschautexte sind auf 80 Zeichen gekürzt. `AI_CONTEXT_ENABLED=false` schaltet den Kontext für Briefing und Chat ab.
   Die generischen Platzhalter aus dem Boilerplate (`DATABASE_URL`, `AUTH_SECRET`, `PORT=3000`) werden entfernt.
 - **Außerhalb des MVP:** Zugriff aus dem LAN, Verschlüsselung der Tokens, CSRF-Schutz über den OAuth-`state` hinaus.
 
 ## 10. API-Spezifikation
 
-Alle Endpunkte liegen auf `http://127.0.0.1:4700` und sind ohne Authentifizierung erreichbar, weil der Server nur an localhost bindet.
+Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizierung, weil der Server nur an localhost bindet. Alle Requests laufen durch `localGuard` (Host-Check; ändernde Requests nur mit JSON-Content-Type und erlaubter Origin).
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `/api/health` | `{ ok: true, uptimeS, collectors: [{ id, status, updatedAt }] }` |
+| GET | `/api/health` | `{ ok: true, uptimeS, instances: [{ instance, type, status, updatedAt }] }` |
+| POST | `/api/open` | Body `{ url }` (nur http/https); öffnet die normalisierte URL im Standardbrowser, `204` |
 | GET | `/api/types` | alle gefundenen Widget-Manifeste (ohne zod, als JSON-Schema) |
 | GET | `/api/layout` | Inhalt von `dashboard.config.json` (Instanzen und Grid) |
 | GET | `/api/widgets` | `WidgetState[]` aller Instanzen (Initial-Load der UI) |
@@ -381,7 +394,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700` und sind ohne Authentifizierun
 | POST | `/api/briefing/run` | startet einen Briefing-Lauf; `202`, oder `429` bei laufendem bzw. zu frühem Lauf. Das Ergebnis kommt über `/api/stream` |
 | POST | `/api/chat` | Body `{ message, useContext }`; Antwort ist ein SSE-Stream aus `delta`-Events, am Ende `done` |
 | DELETE | `/api/chat` | leert den Chat-Verlauf |
-| GET | `/api/stream` | SSE; Event `widget` mit `WidgetState` bei jeder Änderung, `ping` alle 15 s |
+| GET | `/api/stream` | SSE; `snapshot` (alle `WidgetState`) beim Verbinden, `widget` bei jeder Änderung, `ping` alle 15 s |
 | GET | `/auth/google/start`, `/auth/microsoft/start` | Redirect zum OAuth-Consent |
 | GET | `/auth/google/callback`, `/auth/microsoft/callback` | speichert die Tokens und leitet auf `/` um |
 | GET | `/*` | statisches `web/dist` (SPA-Fallback auf `index.html`) |
@@ -394,10 +407,8 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700` und sind ohne Authentifizierun
   "updatedAt": "2026-10-19T09:12:04.120Z",
   "data": {
     "listeners": [
-      { "port": 3000, "address": "127.0.0.1", "pid": 18432, "process": "node.exe",
-        "cwd": "C:\\_repos\\relaunch-radar", "commandLine": "node … tsx watch server/index.ts" },
-      { "port": 4700, "address": "127.0.0.1", "pid": 20110, "process": "node.exe",
-        "cwd": "C:\\_repos\\windowsDashboard", "commandLine": "node … server/index.ts" }
+      { "port": 3000, "address": "127.0.0.1", "pid": 18432, "process": "node.exe" },
+      { "port": 4700, "address": "127.0.0.1", "pid": 20110, "process": "node.exe" }
     ]
   }
 }
@@ -430,7 +441,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700` und sind ohne Authentifizierun
 **Das MVP gilt als erfolgreich, wenn** das Dashboard nach einem Neustart ohne manuelles Zutun als Desktop-Hintergrund erscheint, alle elf Widgets echte Daten oder einen begründeten Zustand zeigen und es eine Woche lang im Alltag ohne Absturz läuft.
 
 ### Funktionale Anforderungen
-- ✅ `/api/widgets/ports` liefert dieselben lauschenden Ports wie `Get-NetTCPConnection -State Listen`.
+- ✅ `/api/widgets/ports` liefert dieselben lauschenden Ports wie `netstat -ano` (Zustand LISTENING).
 - ✅ `/api/widgets/agents` listet die gerade laufende Claude-Code-Session mit dem richtigen Projekt.
 - ✅ Bei laufendem relaunch-radar stimmt das Widget mit dessen `/api/overview` überein. Ist es gestoppt, zeigt das Widget den Dateimodus mit Daten aus `notifications.json`.
 - ✅ Die Ungelesen-Zähler von Gmail, Outlook und IMAP stimmen mit dem jeweiligen Webmail überein.
@@ -458,23 +469,24 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700` und sind ohne Authentifizierun
 
 Jede Phase ist ein eigener Zyklus aus `/plan-feature` → `/execute` → `/validate` → `/commit`, jeweils in einer frischen Session. Die Zeitangaben sind grobe Schätzungen.
 
-### Phase 1 – Gerüst & Basis-Widgets (≈ 1 Session)
+### Phase 1 – Gerüst & Basis-Widgets ✔ erledigt (Commit `2da717a`)
 **Ziel:** Die laufende Pipeline vom Server über die UI bis zu Lively steht.
-- ✅ npm workspaces (`server`, `web`, `shared`), TypeScript, ESLint, Vitest, Skripte `dev`, `build`, `start`, `test`, `lint`, `typecheck`
+- ✅ Ein npm-Paket (keine Workspaces, weil ein Widget-Ordner Server- und UI-Code enthält), TypeScript, ESLint, Vitest, Skripte `dev`, `build`, `start`, `test`, `lint`, `typecheck`, `check`, `new-widget`
 - ✅ **Widget-Vertrag** (`shared/widget-contract.ts`), Loader, `dashboard.config.json`, generische Views, `external`-Widget, `npm run new-widget`, Vertragstest
-- ✅ Hono-Server mit Scheduler, Cache, `/api/types`, `/api/layout`, `/api/widgets`, `/api/stream` und Static-Serving
-- ✅ React-Hub-Grid, `useWidget`, Offline-Banner, dunkles Theme
-- ✅ Widgets: Wetter, News, System
-- ✅ `.env.example` aktualisiert, `config.ts`
-- ✅ README-Abschnitt zur Einrichtung von Lively
+- ✅ Hono-Server mit Scheduler, Cache, `/api/types`, `/api/layout`, `/api/widgets`, `/api/stream`, `/api/open`, `localGuard` und Static-Serving
+- ✅ React-Hub-Grid, `DashboardProvider` (SSE, Watchdog, Reload bei neuem Layout), Offline-Banner, dunkles Theme
+- ✅ Widgets: Wetter, News, System, Extern
+- ✅ `.env.example` bereinigt, README mit Lively-Anleitung
+- ✅ Code-Review (9 Befunde behoben), Regeln in `.agents/reference/security.md` und `widgets.md`
 
-**Validierung:** `npm run build && npm start` → `127.0.0.1:4700` zeigt drei Widgets mit echten Daten. Lively zeigt die Seite als Hintergrund.
+**Validierung:** `npm run check` grün (91 Tests); `127.0.0.1:4700` zeigt vier Widgets mit echten Daten. Offen: Lively-Test durch den Nutzer.
 
 ### Phase 2 – System: Ports & Claude-Agents (≈ 1 Session)
-- ✅ `lib/powershell.ts`, Ports-Collector und -Widget
-- ✅ Agents-Collector (Prozesse + `~/.claude/projects`) und -Widget
+- ✅ `server/lib/win.ts`: `netstat -ano` und `tasklist /fo csv` ausführen und parsen (kein PowerShell/WMI, siehe Messung in Abschnitt 7)
+- ✅ Ports-Collector und -Widget
+- ✅ Agents-Collector (Session-Logs von Claude und Codex mit `cwd` und mtime, dazu laufende Prozesse über `tasklist`) und -Widget
 
-**Validierung:** Abgleich mit `Get-NetTCPConnection`. Diese Session erscheint im Agents-Widget.
+**Validierung:** Ports im Abgleich mit `netstat -ano`. Diese Claude-Session erscheint mit Projekt `windowsDashboard` als aktiv im Agents-Widget.
 
 ### Phase 3 – Projekte: relaunch-radar (≈ ½ Session)
 - ✅ Collector mit API- und SSE-Anbindung und Datei-Fallback, dazu das Widget
@@ -530,7 +542,7 @@ Das Verbrauchs-Widget hängt nicht von Mail und Messenger ab. Es kann schon nach
 | Schema oder Speicherort von `wpndatabase.db` ändert sich mit Windows-Updates; die Datei ist gesperrt | Das Messenger-Widget fällt aus | Nur lesend öffnen, bei Sperre vorher kopieren; Parser mit Fixture-Tests; klarer `error`-Zustand statt leerer Liste; Slack- bzw. Graph-APIs als Ausweg |
 | Messenger zeigen keine Toasts (Benachrichtigungen aus, Fokusmodus, App geschlossen) | Nachrichten fehlen | Grenze in der UI benennen („nur Nachrichten mit Benachrichtigung“); Benachrichtigungen für die relevanten Apps aktiviert lassen |
 | OAuth-Einrichtung bei Google und Azure ist aufwendig, Tokens laufen ab | Mail-Widgets bleiben leer | Schritt-für-Schritt-Anleitung im README; Refresh-Tokens mit `offline_access`; abgelaufene Tokens zeigen `unconfigured` mit Re-Login-Link |
-| PowerShell-Aufrufe sind langsam (~0,3–1 s) und kosten CPU | Hohe Last, träge Widgets | Ein Aufruf pro Collector-Lauf mit JSON-Ausgabe; Intervall ≥ 10 s; Timeout plus `stale`-Status |
+| WMI-/CIM-Abfragen sind auf dem Zielrechner extrem langsam (gemessen: `Get-NetTCPConnection` 49 s, `Win32_Process` 39 s, `si.mem()` 94 s) | Timeouts, gestapelte Prozesse, leere Widgets | Kein WMI/CIM in Collectors mit kurzem Intervall; `netstat`/`tasklist`/Node-`os`-APIs; jeden Systemaufruf vor der Nutzung messen; Scheduler startet keinen neuen Lauf, solange ein alter hängt |
 | `claude -p` ist langsam (30–90 s), schlägt bei einem Login- oder Limit-Problem fehl oder ändert seine CLI-Flags | Kein bzw. veraltetes Briefing | Asynchroner Lauf mit Timeout; das letzte Briefing bleibt als `stale` sichtbar; Fehlertext aus stderr anzeigen; CLI-Aufruf gekapselt in `ai/briefing.ts` |
 | Format der Session-Logs von Claude und Codex ist nicht offiziell dokumentiert und kann sich ändern | Verbrauchsanzeige falsch oder leer | Defensive zod-Parser, unbekannte Zeilen überspringen; Fixture-Tests mit echten Zeilen; bei Parse-Fehlern `error` statt falscher Zahlen |
 | KI erfindet Inhalte im Briefing oder Chat | Falsche Prioritäten | Prompt verlangt ausschließlich Fakten aus dem Snapshot mit Quellenangabe; Briefing zeigt die Snapshot-Zeit; keine KI-Aktionen mit Wirkung |
