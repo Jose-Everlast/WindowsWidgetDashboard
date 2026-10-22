@@ -65,6 +65,8 @@ Details und Konfiguration stehen in der README des jeweiligen Ordners unter `wid
 
 **Layout:** `x` und `w` legen Spalte und Breite fest, `y` die Reihenfolge innerhalb der Spalte. Jede Kachel ist so hoch wie ihr Inhalt und schließt direkt an die Kachel darüber an; `h` ist die maximale Höhe in Rasterzeilen, darüber wird in der Kachel gescrollt.
 
+**Darstellung:** Das Zahnrad oben rechts öffnet die Einstellungen: Kachel-Hintergrund und Kachel-Rahmen lassen sich für alle Widgets abschalten. Die Einstellung liegt auf dem Server (`data/ui-settings.json`) und gilt sofort für alle Ansichten, also auch für Lively.
+
 ## Eigene Widgets
 
 ```bash

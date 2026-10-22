@@ -11,6 +11,7 @@ import { loadDashboardConfig } from "./config-file";
 import { assertLocalHost, config } from "./env";
 import { log, logError } from "./log";
 import { createScheduler } from "./scheduler";
+import { createSettingsStore } from "./settings";
 import { buildLayout, buildTypes, loadWidgetTypes, resolveInstances } from "./widgets/loader";
 
 // Opens an already validated and normalized http(s) href in the default browser. Not "cmd /c start"
@@ -37,8 +38,11 @@ async function main() {
   const cache = createCache(instances.map(i => i.instance));
   const scheduler = createScheduler({ cache, instances, env: process.env });
 
+  const settings = await createSettingsStore(join(config.dataDir, "ui-settings.json"), msg => logError("settings", msg));
+
   const app = createApp({
     cache,
+    settings,
     scheduler,
     layout: buildLayout(dashboard, types),
     types: buildTypes(types),

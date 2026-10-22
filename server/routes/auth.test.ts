@@ -9,6 +9,7 @@ import { oauthAccounts } from "../auth/accounts";
 import { createPendingStore } from "../auth/pending";
 import { createTokenStore } from "../auth/token-store";
 import { createCache } from "../cache";
+import { createSettingsStore } from "../settings";
 import type { ResolvedInstance } from "../widgets/loader";
 import type { AuthDeps } from "./auth";
 
@@ -72,6 +73,7 @@ async function setup(over: Partial<AuthDeps> = {}, tokenBody?: string) {
     types: [],
     openUrl: vi.fn(async () => {}),
     startedAt: Date.now(),
+    settings: await createSettingsStore(join(dir, "ui-settings.json")),
     allowedHosts: ["localhost", "127.0.0.1:4700", "localhost:4700"],
     allowedOrigins: ["http://127.0.0.1:4700"],
     distDir,

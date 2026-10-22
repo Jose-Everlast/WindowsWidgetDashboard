@@ -31,6 +31,12 @@ export type TypesResponse = Array<{
   configSchema: unknown;
 }>;
 
+/** Look of all tiles, set in the settings panel; GET/PUT /api/settings, SSE event "settings". */
+export interface UiSettings {
+  tileBackground: boolean;
+  tileBorder: boolean;
+}
+
 export interface HealthResponse {
   ok: true;
   uptimeS: number;

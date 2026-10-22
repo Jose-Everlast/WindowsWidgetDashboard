@@ -395,7 +395,8 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
 | POST | `/api/briefing/run` | startet einen Briefing-Lauf; `202`, oder `429` bei laufendem bzw. zu frühem Lauf. Das Ergebnis kommt über `/api/stream` |
 | POST | `/api/chat` | Body `{ message, useContext }`; Antwort ist ein SSE-Stream aus `delta`-Events, am Ende `done` |
 | DELETE | `/api/chat` | leert den Chat-Verlauf |
-| GET | `/api/stream` | SSE; `snapshot` (alle `WidgetState`) beim Verbinden, `widget` bei jeder Änderung, `ping` alle 15 s |
+| GET / PUT | `/api/settings` | Darstellung aller Kacheln `{ tileBackground, tileBorder }` (Einstellungs-Panel, Zahnrad oben rechts); gespeichert in `data/ui-settings.json`, Änderungen gehen per SSE-Event `settings` an alle Ansichten |
+| GET | `/api/stream` | SSE; `snapshot` (alle `WidgetState`) und `settings` beim Verbinden, `widget` bei jeder Änderung, `ping` alle 15 s |
 | GET | `/auth/google/start?account=<id>`, `/auth/microsoft/start?account=<id>` | Redirect zum OAuth-Consent für ein konfiguriertes Konto |
 | GET | `/auth/google/callback`, `/auth/microsoft/callback` | speichert die Tokens und antwortet mit einer Textseite („Verbunden …“); läuft im Standardbrowser, nicht in Lively |
 | GET | `/*` | statisches `web/dist` (SPA-Fallback auf `index.html`) |

@@ -4,6 +4,7 @@ import type { WidgetState } from "@shared/widget-contract";
 import { useDashboard } from "./DashboardProvider";
 import { OfflineBanner } from "./OfflineBanner";
 import { widgetComponents } from "./registry";
+import { SettingsPanel } from "./SettingsPanel";
 import { ErrorBoundary, ROW_UNIT_PX, WidgetFrame } from "./WidgetFrame";
 
 /** Overlay widgets (manifest.overlay) render without a tile, above the grid. */
@@ -22,7 +23,7 @@ function Overlay({ widget }: { widget: LayoutWidget }) {
 }
 
 export function Hub() {
-  const { layout, online } = useDashboard();
+  const { layout, online, settings } = useDashboard();
   if (!layout) return <OfflineBanner />;
   const { grid } = layout;
 
@@ -38,6 +39,8 @@ export function Hub() {
       {!online && <OfflineBanner />}
       <div aria-hidden className="hud-scanlines" />
       <main
+        data-tile-bg={settings?.tileBackground === false ? "off" : "on"}
+        data-tile-border={settings?.tileBorder === false ? "off" : "on"}
         className="grid h-full content-start overflow-hidden"
         style={{
           gridTemplateColumns: `repeat(${grid.columns}, minmax(0, 1fr))`,
@@ -64,6 +67,7 @@ export function Hub() {
         .map(w => (
           <Overlay key={w.instance} widget={w} />
         ))}
+      <SettingsPanel />
     </>
   );
 }

@@ -4,6 +4,7 @@ import type { HealthResponse, LayoutResponse, TypesResponse } from "@shared/api"
 import type { Cache } from "../cache";
 import { notFound, parseJson } from "../http";
 import type { Scheduler } from "../scheduler";
+import { UiSettingsPatch, type SettingsStore } from "../settings";
 
 const OpenBody = z.object({ url: z.url({ protocol: /^https?$/ }) });
 
@@ -15,6 +16,7 @@ export interface ApiDeps {
   /** Receives the normalized href (new URL(..).href): quotes and spaces are percent-encoded. */
   openUrl: (url: string) => Promise<void>;
   startedAt: number;
+  settings: SettingsStore;
 }
 
 export function apiRoutes(deps: ApiDeps): Hono {
@@ -30,6 +32,9 @@ export function apiRoutes(deps: ApiDeps): Hono {
 
   app.get("/types", c => c.json(deps.types));
 
+  // Content type and Origin are enforced by localGuard like for every state-changing call.
+  app.get("/settings", c => c.json(deps.settings.get()));
+  app.put("/settings", async c => c.json(await deps.settings.update(await parseJson(c, UiSettingsPatch))));
   app.get("/layout", c => c.json(deps.layout));
   app.get("/widgets", c => c.json(deps.cache.all()));
 

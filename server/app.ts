@@ -17,7 +17,7 @@ export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
 
   app.use("*", localGuard(deps));
-  app.route("/api/stream", streamRoutes(deps.cache));
+  app.route("/api/stream", streamRoutes(deps.cache, deps.settings));
   app.route("/api", apiRoutes(deps));
   if (deps.auth) app.route("/auth", authRoutes(deps.auth));
   app.route("/", dashboardRoutes(deps.distDir)); // last: SPA fallback

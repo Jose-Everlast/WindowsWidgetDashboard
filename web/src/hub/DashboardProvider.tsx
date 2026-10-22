@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { LayoutResponse } from "@shared/api";
+import type { LayoutResponse, UiSettings } from "@shared/api";
 import type { WidgetState } from "@shared/widget-contract";
 
 const RETRY_MS = 5_000;
@@ -12,6 +12,9 @@ export interface Dashboard {
   layout: LayoutResponse | null;
   states: Record<string, WidgetState>;
   online: boolean;
+  /** null until the first SSE "settings" event. */
+  settings: UiSettings | null;
+  updateSettings(patch: Partial<UiSettings>): Promise<void>;
   refresh(instance: string): Promise<void>;
   /** Runs a collector action; on success the new state is applied right away (SSE follows anyway). */
   runAction(instance: string, action: string, input?: unknown): Promise<ActionResult>;
@@ -36,6 +39,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [layout, setLayout] = useState<LayoutResponse | null>(null);
   const [states, setStates] = useState<Record<string, WidgetState>>({});
   const [online, setOnline] = useState(false);
+  const [settings, setSettings] = useState<UiSettings | null>(null);
   const layoutJson = useRef<string | null>(null);
 
   // Layout: retry until the server answers.
@@ -94,6 +98,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         const s = data<WidgetState>(e);
         setStates(prev => ({ ...prev, [s.instance]: s }));
       });
+      es.addEventListener("settings", e => {
+        lastEventAt = Date.now();
+        setSettings(data<UiSettings>(e));
+      });
       es.addEventListener("ping", () => {
         lastEventAt = Date.now();
       });
@@ -143,10 +151,25 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     return { ok: true, state: s };
   }, []);
 
+  const updateSettings = useCallback(async (patch: Partial<UiSettings>) => {
+    // Optimistic: the switch reacts at once; the SSE "settings" event confirms it for every view.
+    setSettings(prev => (prev ? { ...prev, ...patch } : prev));
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (res.ok) setSettings((await res.json()) as UiSettings);
+    } catch {
+      // Server unreachable: the offline banner already says so; the next snapshot corrects the state.
+    }
+  }, []);
+
   // Errors need no handling here: the offline banner or the tile status already shows them.
   const refresh = useCallback(async (instance: string) => void (await runAction(instance, "refresh")), [runAction]);
 
   return (
-    <DashboardContext.Provider value={{ layout, states, online, refresh, runAction }}>{children}</DashboardContext.Provider>
+    <DashboardContext.Provider value={{ layout, states, online, settings, updateSettings, refresh, runAction }}>{children}</DashboardContext.Provider>
   );
 }

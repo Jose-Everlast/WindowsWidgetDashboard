@@ -7,6 +7,7 @@ import type { WidgetState } from "@shared/widget-contract";
 import { createApp, type AppDeps } from "./app";
 import { createCache } from "./cache";
 import { HttpError } from "./http";
+import { createSettingsStore } from "./settings";
 
 const ORIGIN = "http://127.0.0.1:4700";
 const state: WidgetState = {
@@ -25,7 +26,7 @@ const layout: LayoutResponse = {
 let distDir: string;
 let deps: AppDeps;
 
-beforeEach(() => {
+beforeEach(async () => {
   distDir = mkdtempSync(join(tmpdir(), "wd-dist-"));
   mkdirSync(join(distDir, "assets"));
   writeFileSync(join(distDir, "index.html"), "<!doctype html><title>Dashboard</title>");
@@ -45,6 +46,7 @@ beforeEach(() => {
     types: [],
     openUrl: vi.fn(async () => {}),
     startedAt: Date.now() - 5000,
+    settings: await createSettingsStore(join(distDir, "ui-settings.json")),
     // app.request("/x") has no Host header; the guard then uses the URL host "localhost".
     allowedHosts: ["localhost", "127.0.0.1:4700"],
     allowedOrigins: [ORIGIN],
@@ -123,6 +125,27 @@ describe("localGuard", () => {
     });
     expect(foreign.status).toBe(403);
     expect(deps.scheduler.action).not.toHaveBeenCalled();
+  });
+});
+
+describe("/api/settings", () => {
+  const put = (body: string, headers: Record<string, string> = { "content-type": "application/json" }) =>
+    createApp(deps).request("/api/settings", { method: "PUT", headers, body });
+
+  it("reads defaults and stores a change", async () => {
+    expect(await (await createApp(deps).request("/api/settings")).json()).toEqual({ tileBackground: true, tileBorder: true });
+    const res = await put('{"tileBorder":false}');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ tileBackground: true, tileBorder: false });
+    expect(deps.settings.get().tileBorder).toBe(false);
+  });
+
+  it("rejects unknown fields, other sites and non-JSON", async () => {
+    expect((await put('{"tileBorder":"nein"}')).status).toBe(400);
+    expect((await put('{"evil":true}')).status).toBe(400);
+    expect((await put('{"tileBorder":false}', { "content-type": "text/plain" })).status).toBe(415);
+    expect((await put('{"tileBorder":false}', { "content-type": "application/json", origin: "https://evil.example" })).status).toBe(403);
+    expect(deps.settings.get()).toEqual({ tileBackground: true, tileBorder: true });
   });
 });
 
