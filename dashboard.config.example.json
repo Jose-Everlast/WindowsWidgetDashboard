@@ -120,6 +120,15 @@
       "x": 0,
       "y": 6,
       "config": {}
+    },
+    {
+      "instance": "core",
+      "type": "core",
+      "x": 3,
+      "y": 6,
+      "config": {
+        "label": "JARVIS"
+      }
     }
   ]
 }

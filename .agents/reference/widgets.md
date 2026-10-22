@@ -29,6 +29,7 @@ Laden, wenn ein Widget angelegt oder geändert wird. Den Vertrag selbst definier
    - Die Aktion liefert keine Daten an die UI; der Scheduler sammelt danach neu (`scheduler.action`), so laufen Prüfung, Cache und SSE wie bei jedem Poll.
    - Pro Instanz eigene Dateien über `ctx.instance` (z. B. `data/notes/<instance>.json`).
 12. **Overlay-Widgets** (`manifest.overlay: true`, z. B. `widgets/notes`): kein Rahmen, kein Rasterplatz; `Widget.tsx` ist Pflicht (Vertragstest) und rendert selbst eine `fixed`-Ebene mit `pointer-events-none`, nur die eigenen Elemente bekommen `pointer-events-auto`.
+13. **Teure Effekte meiden** (das Wallpaper läuft rund um die Uhr): animiert wird nur `transform`/`opacity`. Kein `mask-image` und kein CSS-`filter` auf Elementen mit bewegtem Inhalt, sonst wird jeder Frame neu gezeichnet; Kanten und Glow statisch darüberlegen (siehe `.hud-ticker`, `widgets/core`). Frame-Zeiten nur im sichtbaren Tab messen: Chrome drosselt `requestAnimationFrame` im Hintergrund auf ≈ 1/s.
 
 ## Tests
 

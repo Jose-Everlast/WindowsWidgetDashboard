@@ -10,6 +10,8 @@ export interface LayoutWidget extends InstanceConfig {
   hasComponent: boolean;
   /** true: no tile, rendered above the grid (manifest.overlay). */
   overlay: boolean;
+  /** true: grid place without frame and title bar (manifest.frameless). */
+  frameless: boolean;
 }
 
 export interface LayoutResponse {

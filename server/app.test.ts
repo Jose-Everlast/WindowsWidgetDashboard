@@ -19,7 +19,7 @@ const state: WidgetState = {
 };
 const layout: LayoutResponse = {
   grid: { columns: 12, rows: 8, gapPx: 12, reserveLeftPx: 0, reserveTopPx: 0 },
-  widgets: [{ instance: "system", type: "system", x: 0, y: 0, w: 3, h: 3, title: "System", enabled: true, config: {}, hasComponent: true, overlay: false }],
+  widgets: [{ instance: "system", type: "system", x: 0, y: 0, w: 3, h: 3, title: "System", enabled: true, config: {}, hasComponent: true, overlay: false, frameless: false }],
 };
 
 let distDir: string;

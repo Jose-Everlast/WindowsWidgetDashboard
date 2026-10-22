@@ -42,7 +42,7 @@ export default function SystemWidget({ state }: WidgetProps<SystemData>) {
           detail={`${gb(d.sizeBytes - d.usedBytes)} GB frei`}
         />
       ))}
-      <div className="mt-auto text-xs text-muted">Läuft seit {uptime(uptimeS)}</div>
+      <div className="text-xs text-muted">Läuft seit {uptime(uptimeS)}</div>
     </div>
   );
 }

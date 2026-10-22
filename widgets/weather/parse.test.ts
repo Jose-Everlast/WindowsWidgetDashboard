@@ -6,13 +6,21 @@ import { parseForecast, wmo } from "./parse";
 const raw = JSON.parse(readFileSync(new URL("./fixtures/forecast.json", import.meta.url), "utf8"));
 
 describe("parseForecast with a real Open-Meteo response", () => {
-  it("zips 12 hours and 3 days", () => {
+  it("zips 36 hours and 6 days", () => {
     const data = parseForecast(raw, "Münster");
     expect(WeatherData.safeParse(data).success).toBe(true);
-    expect(data.hours).toHaveLength(12);
-    expect(data.days).toHaveLength(3);
+    expect(data.hours).toHaveLength(36);
+    expect(data.days).toHaveLength(6);
+    expect(data.hours[0]!.gusts).toBe(raw.hourly.wind_gusts_10m[0]);
+    expect(data.days[1]).toMatchObject({ gustsMax: raw.daily.wind_gusts_10m_max[1], snowfall: raw.daily.snowfall_sum[1] });
     expect(data.current.temp).toBe(raw.current.temperature_2m);
+    expect(data.current.humidity).toBe(raw.current.relative_humidity_2m);
     expect(data.days[0]).toMatchObject({ date: raw.daily.time[0], max: raw.daily.temperature_2m_max[0] });
+    expect(data.days[0]).toMatchObject({ sunrise: raw.daily.sunrise[0], sunset: raw.daily.sunset[0] });
+    expect(parseForecast({ ...raw, daily: { ...raw.daily, sunrise: undefined, sunset: undefined } }, "x").days[0]).toMatchObject({
+      sunrise: null,
+      sunset: null,
+    });
     if (process.env.UPDATE_FIXTURES) {
       writeFileSync(new URL("./fixtures/weather.json", import.meta.url), JSON.stringify(data, null, 2) + "\n");
     }

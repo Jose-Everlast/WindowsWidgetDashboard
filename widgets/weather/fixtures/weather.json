@@ -1,83 +1,264 @@
 {
   "label": "Münster",
   "current": {
-    "temp": 12.2,
-    "apparent": 9.5,
+    "temp": 8.2,
+    "apparent": 4,
     "code": 3,
-    "wind": 16.6
+    "wind": 20.5,
+    "humidity": 80
   },
   "hours": [
     {
-      "time": "2026-10-19T14:00",
-      "temp": 12.4,
-      "precipProb": 0,
-      "code": 3
-    },
-    {
-      "time": "2026-10-19T15:00",
-      "temp": 12.1,
-      "precipProb": 0,
-      "code": 3
-    },
-    {
-      "time": "2026-10-19T16:00",
-      "temp": 12.5,
-      "precipProb": 0,
-      "code": 3
-    },
-    {
-      "time": "2026-10-19T17:00",
-      "temp": 12.3,
-      "precipProb": 0,
-      "code": 3
-    },
-    {
-      "time": "2026-10-19T18:00",
-      "temp": 12,
-      "precipProb": 0,
-      "code": 2
-    },
-    {
-      "time": "2026-10-19T19:00",
-      "temp": 11.3,
-      "precipProb": 0,
-      "code": 0
-    },
-    {
-      "time": "2026-10-19T20:00",
-      "temp": 10.1,
-      "precipProb": 0,
-      "code": 0
-    },
-    {
-      "time": "2026-10-19T21:00",
-      "temp": 9,
-      "precipProb": 0,
-      "code": 3
-    },
-    {
       "time": "2026-10-19T22:00",
-      "temp": 8.4,
+      "temp": 8.2,
       "precipProb": 0,
-      "code": 3
+      "code": 3,
+      "gusts": 36.4
     },
     {
       "time": "2026-10-19T23:00",
-      "temp": 7.9,
+      "temp": 7.8,
       "precipProb": 0,
-      "code": 3
+      "code": 3,
+      "gusts": 36.7
     },
     {
       "time": "2026-10-20T00:00",
       "temp": 7.4,
       "precipProb": 0,
-      "code": 3
+      "code": 3,
+      "gusts": 32.8
     },
     {
       "time": "2026-10-20T01:00",
+      "temp": 6.7,
+      "precipProb": 0,
+      "code": 3,
+      "gusts": 25.9
+    },
+    {
+      "time": "2026-10-20T02:00",
+      "temp": 6.2,
+      "precipProb": 0,
+      "code": 2,
+      "gusts": 28.1
+    },
+    {
+      "time": "2026-10-20T03:00",
+      "temp": 5.8,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 29.2
+    },
+    {
+      "time": "2026-10-20T04:00",
+      "temp": 5.3,
+      "precipProb": 0,
+      "code": 1,
+      "gusts": 27.7
+    },
+    {
+      "time": "2026-10-20T05:00",
+      "temp": 4.8,
+      "precipProb": 0,
+      "code": 3,
+      "gusts": 24.5
+    },
+    {
+      "time": "2026-10-20T06:00",
+      "temp": 4.7,
+      "precipProb": 0,
+      "code": 1,
+      "gusts": 30.2
+    },
+    {
+      "time": "2026-10-20T07:00",
+      "temp": 4.2,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 26.6
+    },
+    {
+      "time": "2026-10-20T08:00",
+      "temp": 4,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 25.2
+    },
+    {
+      "time": "2026-10-20T09:00",
+      "temp": 4.3,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 30.2
+    },
+    {
+      "time": "2026-10-20T10:00",
+      "temp": 5.4,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 34.9
+    },
+    {
+      "time": "2026-10-20T11:00",
       "temp": 7,
       "precipProb": 0,
-      "code": 2
+      "code": 0,
+      "gusts": 37.4
+    },
+    {
+      "time": "2026-10-20T12:00",
+      "temp": 8.7,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 39.2
+    },
+    {
+      "time": "2026-10-20T13:00",
+      "temp": 10.1,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 39.2
+    },
+    {
+      "time": "2026-10-20T14:00",
+      "temp": 11.2,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 37.4
+    },
+    {
+      "time": "2026-10-20T15:00",
+      "temp": 12,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 35.6
+    },
+    {
+      "time": "2026-10-20T16:00",
+      "temp": 12.4,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 35.3
+    },
+    {
+      "time": "2026-10-20T17:00",
+      "temp": 12.4,
+      "precipProb": 0,
+      "code": 0,
+      "gusts": 34.9
+    },
+    {
+      "time": "2026-10-20T18:00",
+      "temp": 11.8,
+      "precipProb": 2,
+      "code": 0,
+      "gusts": 32.8
+    },
+    {
+      "time": "2026-10-20T19:00",
+      "temp": 10.8,
+      "precipProb": 6,
+      "code": 3,
+      "gusts": 27.4
+    },
+    {
+      "time": "2026-10-20T20:00",
+      "temp": 10.4,
+      "precipProb": 10,
+      "code": 3,
+      "gusts": 24.1
+    },
+    {
+      "time": "2026-10-20T21:00",
+      "temp": 10,
+      "precipProb": 16,
+      "code": 3,
+      "gusts": 22
+    },
+    {
+      "time": "2026-10-20T22:00",
+      "temp": 10,
+      "precipProb": 23,
+      "code": 3,
+      "gusts": 22.3
+    },
+    {
+      "time": "2026-10-20T23:00",
+      "temp": 10.1,
+      "precipProb": 29,
+      "code": 3,
+      "gusts": 22.3
+    },
+    {
+      "time": "2026-10-21T00:00",
+      "temp": 9.7,
+      "precipProb": 31,
+      "code": 3,
+      "gusts": 20.5
+    },
+    {
+      "time": "2026-10-21T01:00",
+      "temp": 9.7,
+      "precipProb": 31,
+      "code": 51,
+      "gusts": 21.2
+    },
+    {
+      "time": "2026-10-21T02:00",
+      "temp": 9.8,
+      "precipProb": 33,
+      "code": 51,
+      "gusts": 19.1
+    },
+    {
+      "time": "2026-10-21T03:00",
+      "temp": 9.8,
+      "precipProb": 37,
+      "code": 51,
+      "gusts": 14.8
+    },
+    {
+      "time": "2026-10-21T04:00",
+      "temp": 9.9,
+      "precipProb": 43,
+      "code": 51,
+      "gusts": 14.8
+    },
+    {
+      "time": "2026-10-21T05:00",
+      "temp": 10.1,
+      "precipProb": 51,
+      "code": 51,
+      "gusts": 13.7
+    },
+    {
+      "time": "2026-10-21T06:00",
+      "temp": 10.4,
+      "precipProb": 63,
+      "code": 51,
+      "gusts": 13.7
+    },
+    {
+      "time": "2026-10-21T07:00",
+      "temp": 10.5,
+      "precipProb": 76,
+      "code": 53,
+      "gusts": 14.8
+    },
+    {
+      "time": "2026-10-21T08:00",
+      "temp": 10.9,
+      "precipProb": 86,
+      "code": 53,
+      "gusts": 19.8
+    },
+    {
+      "time": "2026-10-21T09:00",
+      "temp": 10.9,
+      "precipProb": 91,
+      "code": 53,
+      "gusts": 21.2
     }
   ],
   "days": [
@@ -86,21 +267,66 @@
       "min": 7.4,
       "max": 12.9,
       "precipProb": 24,
-      "code": 3
+      "code": 3,
+      "sunrise": "2026-10-19T08:00",
+      "sunset": "2026-10-19T18:27",
+      "gustsMax": 36.7,
+      "snowfall": 0
     },
     {
       "date": "2026-10-20",
-      "min": 4.4,
-      "max": 12.8,
-      "precipProb": 12,
-      "code": 51
+      "min": 4,
+      "max": 12.5,
+      "precipProb": 29,
+      "code": 3,
+      "sunrise": "2026-10-20T08:02",
+      "sunset": "2026-10-20T18:25",
+      "gustsMax": 39.2,
+      "snowfall": 0
     },
     {
       "date": "2026-10-21",
-      "min": 10,
-      "max": 15.1,
-      "precipProb": 76,
-      "code": 53
+      "min": 9.7,
+      "max": 12.3,
+      "precipProb": 92,
+      "code": 53,
+      "sunrise": "2026-10-21T08:04",
+      "sunset": "2026-10-21T18:22",
+      "gustsMax": 32.4,
+      "snowfall": 0
+    },
+    {
+      "date": "2026-10-22",
+      "min": 6.7,
+      "max": 11.9,
+      "precipProb": 51,
+      "code": 51,
+      "sunrise": "2026-10-22T08:06",
+      "sunset": "2026-10-22T18:20",
+      "gustsMax": 50,
+      "snowfall": 0
+    },
+    {
+      "date": "2026-10-23",
+      "min": 8.6,
+      "max": 13.8,
+      "precipProb": 73,
+      "code": 53,
+      "sunrise": "2026-10-23T08:08",
+      "sunset": "2026-10-23T18:18",
+      "gustsMax": 71.6,
+      "snowfall": 0
+    },
+    {
+      "date": "2026-10-24",
+      "min": 8.6,
+      "max": 11.8,
+      "precipProb": 60,
+      "code": 55,
+      "sunrise": "2026-10-24T08:09",
+      "sunset": "2026-10-24T18:16",
+      "gustsMax": 71.6,
+      "snowfall": 0
     }
   ]
 }

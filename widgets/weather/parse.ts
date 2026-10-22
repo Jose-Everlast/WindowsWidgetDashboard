@@ -5,14 +5,30 @@ import type { WeatherData, WeatherIcon } from "./manifest";
 type Icon = z.infer<typeof WeatherIcon>;
 
 interface OpenMeteoResponse {
-  current: { temperature_2m: number; apparent_temperature: number; weather_code: number; wind_speed_10m: number };
-  hourly: { time: string[]; temperature_2m: number[]; precipitation_probability: Array<number | null>; weather_code: number[] };
+  current: {
+    temperature_2m: number;
+    apparent_temperature: number;
+    weather_code: number;
+    wind_speed_10m: number;
+    relative_humidity_2m?: number | null;
+  };
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    precipitation_probability: Array<number | null>;
+    weather_code: number[];
+    wind_gusts_10m?: Array<number | null>;
+  };
   daily: {
     time: string[];
     weather_code: number[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
     precipitation_probability_max: Array<number | null>;
+    sunrise?: Array<string | null>;
+    sunset?: Array<string | null>;
+    wind_gusts_10m_max?: Array<number | null>;
+    snowfall_sum?: Array<number | null>;
   };
 }
 
@@ -26,12 +42,14 @@ export function parseForecast(json: OpenMeteoResponse, label: string): WeatherDa
       apparent: current.apparent_temperature,
       code: current.weather_code,
       wind: current.wind_speed_10m,
+      humidity: current.relative_humidity_2m ?? null,
     },
     hours: hourly.time.map((time, i) => ({
       time,
       temp: hourly.temperature_2m[i]!,
       precipProb: hourly.precipitation_probability[i] ?? null,
       code: hourly.weather_code[i]!,
+      gusts: hourly.wind_gusts_10m?.[i] ?? null,
     })),
     days: daily.time.map((date, i) => ({
       date,
@@ -39,6 +57,10 @@ export function parseForecast(json: OpenMeteoResponse, label: string): WeatherDa
       max: daily.temperature_2m_max[i]!,
       precipProb: daily.precipitation_probability_max[i] ?? null,
       code: daily.weather_code[i]!,
+      sunrise: daily.sunrise?.[i] ?? null,
+      sunset: daily.sunset?.[i] ?? null,
+      gustsMax: daily.wind_gusts_10m_max?.[i] ?? null,
+      snowfall: daily.snowfall_sum?.[i] ?? null,
     })),
   };
 }

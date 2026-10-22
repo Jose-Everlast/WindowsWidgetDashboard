@@ -19,6 +19,10 @@
     "new-widget": "tsx scripts/new-widget.ts"
   },
   "dependencies": {
+    "@bybas/weather-icons": "2.0.0",
+    "@fontsource/exo-2": "5.3.0",
+    "@fontsource/orbitron": "5.3.0",
+    "@fontsource/share-tech-mono": "5.3.0",
     "@hono/node-server": "^2.1.5",
     "hono": "^4.13.13",
     "imapflow": "2.5.5",

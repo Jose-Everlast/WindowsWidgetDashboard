@@ -38,6 +38,8 @@ export interface WidgetManifest<C extends z.ZodType = z.ZodType, T extends z.Zod
    * dashboard. x/y/w/h of the instance are ignored.
    */
   overlay?: boolean;
+  /** Keeps its grid place but without tile frame and title bar: floats on the wallpaper (Widget.tsx required). */
+  frameless?: boolean;
 }
 
 export interface CollectContext<C> {

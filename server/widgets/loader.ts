@@ -100,6 +100,7 @@ export function buildLayout(config: DashboardConfig, types: Map<string, LoadedWi
           view: m?.view,
           hasComponent: types.get(w.type)?.hasComponent ?? false,
           overlay: (m?.overlay ?? false) && (types.get(w.type)?.hasComponent ?? false),
+          frameless: (m?.frameless ?? false) && (types.get(w.type)?.hasComponent ?? false),
         };
       }),
   };

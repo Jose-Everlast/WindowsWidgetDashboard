@@ -40,9 +40,9 @@ describe("widget contract", () => {
       if (!hasComponent) expect(WidgetView.safeParse(fixture).success).toBe(true);
     });
 
-    it("has a Widget.tsx when it is an overlay", () => {
+    it("has a Widget.tsx when it is an overlay or frameless", () => {
       // An overlay has no tile, so there is no generic rendering to fall back to.
-      if (manifest.overlay) expect(hasComponent).toBe(true);
+      if (manifest.overlay || manifest.frameless) expect(hasComponent).toBe(true);
     });
 
     it("accepts its config from dashboard.config.example.json", () => {

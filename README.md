@@ -51,16 +51,19 @@ Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst.
 | Typ | Zeigt | Quelle |
 |---|---|---|
 | `weather` | aktuelles Wetter, 12 h, 3 Tage | Open-Meteo |
-| `news` | Schlagzeilen mehrerer Feeds | RSS/Atom |
+| `news` | Schlagzeilen mehrerer Feeds als Laufband (hält beim Darüberfahren an) | RSS/Atom |
 | `system` | CPU, RAM, Laufwerke, Uptime | systeminformation, Node `os` |
 | `ports` | wer welchen TCP-Port belegt | `netstat -ano`, `tasklist` |
 | `agents` | Claude-/Codex-Sessions je Projekt, aktiv/inaktiv | Session-Logs, `tasklist` |
 | `relaunch-radar` | Autopilot, laufende Jobs, „wartet auf dich“, letzte Ereignisse (live per SSE) | relaunch-radar-API, Fallback `logs/notifications.json` |
 | `mail` | gemeinsame Inbox: Ungelesen-Zähler je Konto, letzte Mails aller Konten ([Einrichtung](widgets/mail/README.md)) | Gmail-API, Microsoft Graph, IMAP |
+| `core` | HUD-Kern: Uhr, drehende Ringe mit CPU-/RAM-Bögen, Uptime | Node `os` |
 | `notes` | Post-its: direkt in der Kachel tippen, einfärben, abhaken | `data/notes/<instanz>.json` |
 | `external` | beliebige WidgetView-JSONs anderer Projekte | HTTP oder Datei |
 
 Details und Konfiguration stehen in der README des jeweiligen Ordners unter `widgets/<typ>/`.
+
+**Layout:** `x` und `w` legen Spalte und Breite fest, `y` die Reihenfolge innerhalb der Spalte. Jede Kachel ist so hoch wie ihr Inhalt und schließt direkt an die Kachel darüber an; `h` ist die maximale Höhe in Rasterzeilen, darüber wird in der Kachel gescrollt.
 
 ## Eigene Widgets
 
