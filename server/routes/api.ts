@@ -2,14 +2,14 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { HealthResponse, LayoutResponse, TypesResponse } from "@shared/api";
 import type { Cache } from "../cache";
-import { HttpError, notFound, parseJson } from "../http";
+import { notFound, parseJson } from "../http";
 import type { Scheduler } from "../scheduler";
 
 const OpenBody = z.object({ url: z.url({ protocol: /^https?$/ }) });
 
 export interface ApiDeps {
   cache: Cache;
-  scheduler: Pick<Scheduler, "refresh">;
+  scheduler: Pick<Scheduler, "refresh" | "action">;
   layout: LayoutResponse;
   types: TypesResponse;
   /** Receives the normalized href (new URL(..).href): quotes and spaces are percent-encoded. */
@@ -29,6 +29,7 @@ export function apiRoutes(deps: ApiDeps): Hono {
   );
 
   app.get("/types", c => c.json(deps.types));
+
   app.get("/layout", c => c.json(deps.layout));
   app.get("/widgets", c => c.json(deps.cache.all()));
 
@@ -38,10 +39,10 @@ export function apiRoutes(deps: ApiDeps): Hono {
     return c.json(state);
   });
 
+  // Collector actions ("refresh" built in). The body is the action input; each action validates it.
   app.post("/widgets/:instance/actions/:action", async c => {
-    const action = c.req.param("action");
-    if (action !== "refresh") throw new HttpError(404, "unknown action");
-    return c.json(await deps.scheduler.refresh(c.req.param("instance")));
+    const input = await parseJson(c, z.unknown());
+    return c.json(await deps.scheduler.action(c.req.param("instance"), c.req.param("action"), input));
   });
 
   // Opens a link in the default browser: inside Lively a link would otherwise navigate the wallpaper.

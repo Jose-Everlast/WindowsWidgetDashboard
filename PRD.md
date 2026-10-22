@@ -22,7 +22,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 **Mission:** Ein Blick auf den Desktop ersetzt das tägliche Durchklicken durch ein Dutzend Apps und Terminals.
 
 **Kernprinzipien:**
-1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version.
+1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version. Ausgenommen sind eigene Daten des Dashboards wie Notizen (Post-its); fremde Dienste bleiben unberührt.
 2. **Echte Daten oder ein sichtbarer Fehler.** Es gibt keine Mocks und keine stillen Fallbacks. Fehlt eine Konfiguration, zeigt das Widget genau das an.
 3. **Lokal und privat.** Alles läuft auf `127.0.0.1`. Tokens und Daten verlassen den Rechner nur bei den direkten API-Aufrufen an die jeweiligen Dienste. An die KI (Anthropic über die Claude-CLI, OpenAI für den Chat) geht nur ein kompakter Daten-Snapshot, also Betreffzeilen, Absender, Zähler und Status, keine vollständigen Mail-Texte. Dieser Kontext lässt sich abschalten.
 4. **Ein Widget ist ein Modul.** Jedes Widget ist ein Ordner unter `widgets/`, der den Widget-Vertrag erfüllt (siehe 6.1). Ein neues Widget heißt: Ordner anlegen und in die Konfiguration eintragen. Am Kern ändert sich nichts.
@@ -56,6 +56,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 - ✅ Mail-Widget: eine gemeinsame Inbox für Gmail, Outlook und IMAP mit Ungelesen-Zählern pro Konto
 - ✅ Messenger-Widget: WhatsApp, Teams, Discord und Lark aus der Windows-Benachrichtigungsdatenbank
 - ✅ Klick auf eine Mail, eine Nachricht oder eine News öffnet das Ziel im Standardbrowser bzw. in der App
+- ✅ Notiz-Widget (Post-its): direkt in der Kachel anlegen, bearbeiten, einfärben, abhaken und löschen, gespeichert in `data/notes/`
 - ✅ Briefing-Widget: Claude erstellt über `claude -p` aus dem Snapshot aller Widgets einen Tagesüberblick, morgens automatisch und per Knopf neu
 - ✅ Chat-Widget: Fragen an GPT über die OpenAI-API mit gestreamter Antwort; der aktuelle Dashboard-Snapshot ist optional als Kontext dabei
 - ✅ KI-Verbrauch-Widget:
@@ -389,7 +390,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
 | GET | `/api/types` | alle gefundenen Widget-Manifeste (ohne zod, als JSON-Schema) |
 | GET | `/api/layout` | Inhalt von `dashboard.config.json` (Instanzen und Grid) |
 | GET | `/api/widgets` | `WidgetState[]` aller Instanzen (Initial-Load der UI) |
-| POST | `/api/widgets/:instance/actions/:action` | führt eine im Collector deklarierte Aktion aus, z. B. `refresh` |
+| POST | `/api/widgets/:instance/actions/:action` | führt eine im Collector deklarierte Aktion aus (`refresh` ist eingebaut, z. B. `add`/`update`/`remove` bei Notizen); der JSON-Body ist die Eingabe; Antwort ist der neue `WidgetState`, `400` bei ungültiger Eingabe, `404` bei unbekannter Aktion |
 | GET | `/api/widgets/:instance` | `WidgetState` einer Instanz; Standard-Instanzen tragen den Typnamen als ID (`weather`, `news`, `system`, `ports`, `agents`, `relaunch-radar`, `mail`, `messages`, `ai-usage`, `briefing`) |
 | POST | `/api/briefing/run` | startet einen Briefing-Lauf; `202`, oder `429` bei laufendem bzw. zu frühem Lauf. Das Ergebnis kommt über `/api/stream` |
 | POST | `/api/chat` | Body `{ message, useContext }`; Antwort ist ein SSE-Stream aus `delta`-Events, am Ende `done` |

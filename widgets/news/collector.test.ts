@@ -26,6 +26,7 @@ afterAll(() => new Promise<void>(resolve => server.close(() => resolve())));
 
 const run = (feeds: Array<{ label: string; url: string }>, logs: unknown[][] = []) =>
   collector.collect({
+    instance: "news",
     config: { feeds, perFeed: 5 },
     env: {},
     signal: AbortSignal.timeout(10_000),

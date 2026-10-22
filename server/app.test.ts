@@ -6,6 +6,7 @@ import type { HealthResponse, LayoutResponse } from "@shared/api";
 import type { WidgetState } from "@shared/widget-contract";
 import { createApp, type AppDeps } from "./app";
 import { createCache } from "./cache";
+import { HttpError } from "./http";
 
 const ORIGIN = "http://127.0.0.1:4700";
 const state: WidgetState = {
@@ -18,7 +19,7 @@ const state: WidgetState = {
 };
 const layout: LayoutResponse = {
   grid: { columns: 12, rows: 8, gapPx: 12, reserveLeftPx: 0, reserveTopPx: 0 },
-  widgets: [{ instance: "system", type: "system", x: 0, y: 0, w: 3, h: 3, title: "System", enabled: true, config: {}, hasComponent: true }],
+  widgets: [{ instance: "system", type: "system", x: 0, y: 0, w: 3, h: 3, title: "System", enabled: true, config: {}, hasComponent: true, overlay: false }],
 };
 
 let distDir: string;
@@ -33,7 +34,13 @@ beforeEach(() => {
   cache.set(state);
   deps = {
     cache,
-    scheduler: { refresh: vi.fn(async () => state) },
+    scheduler: {
+      refresh: vi.fn(async () => state),
+      action: vi.fn(async (_instance: string, name: string) => {
+        if (name !== "refresh" && name !== "add") throw new HttpError(404, "unknown action");
+        return state;
+      }),
+    },
     layout,
     types: [],
     openUrl: vi.fn(async () => {}),
@@ -66,13 +73,26 @@ describe("API", () => {
     expect((await app.request("/api/widgets/nope")).status).toBe(404);
   });
 
-  it("POST refresh calls the scheduler, unknown actions are 404", async () => {
+  it("POST actions go to the scheduler with the body as input, unknown actions are 404", async () => {
     const app = createApp(deps);
-    const post = (path: string) => app.request(path, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    const post = (path: string, body = "{}") => app.request(path, { method: "POST", headers: { "content-type": "application/json" }, body });
     const res = await post("/api/widgets/system/actions/refresh");
     expect(res.status).toBe(200);
-    expect(deps.scheduler.refresh).toHaveBeenCalledWith("system");
+    expect(await res.json()).toEqual(state);
+    expect(deps.scheduler.action).toHaveBeenCalledWith("system", "refresh", {});
+    expect((await post("/api/widgets/system/actions/add", '{"text":"Milch"}')).status).toBe(200);
+    expect(deps.scheduler.action).toHaveBeenLastCalledWith("system", "add", { text: "Milch" });
     expect((await post("/api/widgets/system/actions/nuke")).status).toBe(404);
+  });
+
+  it("POST actions reject a body that is not JSON", async () => {
+    const res = await createApp(deps).request("/api/widgets/system/actions/add", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{text",
+    });
+    expect(res.status).toBe(400);
+    expect(deps.scheduler.action).not.toHaveBeenCalled();
   });
 
   it("unknown API paths return JSON 404", async () => {
@@ -102,7 +122,7 @@ describe("localGuard", () => {
       body: "{}",
     });
     expect(foreign.status).toBe(403);
-    expect(deps.scheduler.refresh).not.toHaveBeenCalled();
+    expect(deps.scheduler.action).not.toHaveBeenCalled();
   });
 });
 

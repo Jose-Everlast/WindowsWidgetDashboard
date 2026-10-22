@@ -96,6 +96,7 @@ describe("subscribe", () => {
     const controller = new AbortController();
     let refreshes = 0;
     collector.subscribe!({
+      instance: "relaunch-radar",
       config: config(url),
       env: {},
       signal: controller.signal,

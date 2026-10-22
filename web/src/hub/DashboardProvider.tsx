@@ -6,11 +6,15 @@ const RETRY_MS = 5_000;
 // Server pings every 15 s; after 40 s of silence the connection counts as dead.
 const WATCHDOG_MS = 40_000;
 
-interface Dashboard {
+export type ActionResult = { ok: true; state: WidgetState } | { ok: false; error: string };
+
+export interface Dashboard {
   layout: LayoutResponse | null;
   states: Record<string, WidgetState>;
   online: boolean;
   refresh(instance: string): Promise<void>;
+  /** Runs a collector action; on success the new state is applied right away (SSE follows anyway). */
+  runAction(instance: string, action: string, input?: unknown): Promise<ActionResult>;
 }
 
 const DashboardContext = createContext<Dashboard | null>(null);
@@ -117,21 +121,32 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const refresh = useCallback(async (instance: string) => {
+  const runAction = useCallback(async (instance: string, action: string, input: unknown = {}): Promise<ActionResult> => {
+    let res: Response;
     try {
       // JSON content type: the server rejects state-changing requests without it (CSRF guard).
-      const res = await fetch(`/api/widgets/${encodeURIComponent(instance)}/actions/refresh`, {
+      res = await fetch(`/api/widgets/${encodeURIComponent(instance)}/actions/${encodeURIComponent(action)}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: "{}",
+        body: JSON.stringify(input),
       });
-      if (!res.ok) return;
-      const s = (await res.json()) as WidgetState;
-      setStates(prev => ({ ...prev, [s.instance]: s }));
     } catch {
-      // Server unreachable: the offline banner already says so.
+      return { ok: false, error: "Server nicht erreichbar" };
     }
+    const body: unknown = await res.json().catch(() => null);
+    if (!res.ok) {
+      const error = (body as { error?: unknown } | null)?.error;
+      return { ok: false, error: typeof error === "string" ? error : `HTTP ${res.status}` };
+    }
+    const s = body as WidgetState;
+    setStates(prev => ({ ...prev, [s.instance]: s }));
+    return { ok: true, state: s };
   }, []);
 
-  return <DashboardContext.Provider value={{ layout, states, online, refresh }}>{children}</DashboardContext.Provider>;
+  // Errors need no handling here: the offline banner or the tile status already shows them.
+  const refresh = useCallback(async (instance: string) => void (await runAction(instance, "refresh")), [runAction]);
+
+  return (
+    <DashboardContext.Provider value={{ layout, states, online, refresh, runAction }}>{children}</DashboardContext.Provider>
+  );
 }

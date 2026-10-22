@@ -39,7 +39,7 @@ describe("scaffoldWidget", () => {
     scaffoldWidget(dir, "todo");
     const w = (await loadWidgetTypes(dir)).get("todo")!;
     await expect(
-      w.collector.collect({ config: {}, env: {}, signal: AbortSignal.timeout(1000), log: () => {} }),
+      w.collector.collect({ instance: "todo", config: {}, env: {}, signal: AbortSignal.timeout(1000), log: () => {} }),
     ).rejects.toThrow(/TODO/);
   });
 

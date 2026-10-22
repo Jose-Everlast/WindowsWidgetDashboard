@@ -8,6 +8,8 @@ export interface LayoutWidget extends InstanceConfig {
   view?: WidgetViewType;
   /** true: widgets/<type>/Widget.tsx exists; false: render generically. */
   hasComponent: boolean;
+  /** true: no tile, rendered above the grid (manifest.overlay). */
+  overlay: boolean;
 }
 
 export interface LayoutResponse {

@@ -67,7 +67,7 @@ async function setup(over: Partial<AuthDeps> = {}, tokenBody?: string) {
   };
   const deps: AppDeps = {
     cache: createCache(),
-    scheduler: { refresh: vi.fn() },
+    scheduler: { refresh: vi.fn(), action: vi.fn() },
     layout: { grid: { columns: 12, rows: 8, gapPx: 12, reserveLeftPx: 0, reserveTopPx: 0 }, widgets: [] },
     types: [],
     openUrl: vi.fn(async () => {}),

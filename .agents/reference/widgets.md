@@ -23,6 +23,12 @@ Laden, wenn ein Widget angelegt oder geändert wird. Den Vertrag selbst definier
    - `manifest.env` nur für Variablen, ohne die **gar nichts** geht; sonst würde ein fehlendes Konto die ganze Kachel lahmlegen.
    - Geworfen wird erst, wenn alle eingerichteten Teilquellen scheitern.
 10. **Netzwerk-Clients ohne `AbortSignal`** (z. B. imapflow): bei `signal.abort` die Verbindung hart schließen, einen `error`-Listener registrieren (ein unbehandeltes `error`-Event beendet den Prozess) und knappe eigene Timeouts setzen statt der Bibliotheks-Defaults.
+11. **Aktionen** (`collector.actions`, Muster `widgets/notes/collector.ts`):
+   - Die Eingabe kommt aus dem Browser: mit `z.strictObject` prüfen, Fehler als `HttpError(400, z.prettifyError(...))`.
+   - Schreiben nur atomar und unter einem Lock pro Datei (`server/lib/json-file.ts`: `writeJsonFileAtomic`, `withLock`). Eine kaputte Datei wird nie überschrieben.
+   - Die Aktion liefert keine Daten an die UI; der Scheduler sammelt danach neu (`scheduler.action`), so laufen Prüfung, Cache und SSE wie bei jedem Poll.
+   - Pro Instanz eigene Dateien über `ctx.instance` (z. B. `data/notes/<instance>.json`).
+12. **Overlay-Widgets** (`manifest.overlay: true`, z. B. `widgets/notes`): kein Rahmen, kein Rasterplatz; `Widget.tsx` ist Pflicht (Vertragstest) und rendert selbst eine `fixed`-Ebene mit `pointer-events-none`, nur die eigenen Elemente bekommen `pointer-events-auto`.
 
 ## Tests
 

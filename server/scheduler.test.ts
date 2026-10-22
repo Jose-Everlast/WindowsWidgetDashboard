@@ -328,3 +328,84 @@ describe("push (subscribe)", () => {
     s.stop();
   });
 });
+
+describe("scheduler.action", () => {
+  // A source the actions change; collect reads it, like a file.
+  function actionInstance(slowFirstCollect = false) {
+    let n = 1;
+    let calls = 0;
+    let releaseFirst: () => void = () => {};
+    const collect = vi.fn(async () => {
+      const snapshot = n;
+      if (slowFirstCollect && calls++ === 0) await new Promise<void>(r => (releaseFirst = r));
+      return { n: snapshot };
+    });
+    const actions = {
+      set: vi.fn(async (ctx: { instance: string }, input: unknown) => {
+        const parsed = z.object({ n: z.number() }).safeParse(input);
+        if (!parsed.success) throw new HttpError(400, "n fehlt");
+        expect(ctx.instance).toBe("t1");
+        n = parsed.data.n;
+      }),
+    };
+    const r = instance(collect);
+    r.loaded!.collector.actions = actions;
+    return { r, collect, actions, release: () => releaseFirst() };
+  }
+
+  it("runs the action, then collects: the returned state has the change", async () => {
+    const { r, actions } = actionInstance();
+    const cache = createCache();
+    const s = createScheduler({ cache, instances: [r], env: {} });
+    const state = await s.action("t1", "set", { n: 5 });
+    expect(actions.set).toHaveBeenCalledTimes(1);
+    expect(state).toMatchObject({ status: "ok", data: { n: 5 } });
+    expect(cache.get("t1")?.data).toEqual({ n: 5 });
+  });
+
+  it("does not hand back the state of a poll that started before the change", async () => {
+    const { r, release } = actionInstance(true);
+    const s = createScheduler({ cache: createCache(), instances: [r], env: {} });
+    s.start(); // first collect reads n=1 and hangs
+    await flush();
+    const pending = s.action("t1", "set", { n: 9 });
+    await flush();
+    release();
+    expect((await pending).data).toEqual({ n: 9 });
+    s.stop();
+  });
+
+  it("rejects unknown actions, prototype names and non-runnable instances", async () => {
+    const { r } = actionInstance();
+    const unconfigured: ResolvedInstance = {
+      instance: "u",
+      type: "t",
+      layout: { instance: "u", type: "t", x: 0, y: 0, enabled: true, config: {} },
+      initialStatus: "unconfigured",
+      initialError: "Fehlt in .env: K",
+    };
+    const s = createScheduler({ cache: createCache(), instances: [r, unconfigured], env: {} });
+    await expect(s.action("t1", "nuke", {})).rejects.toMatchObject({ status: 404 });
+    await expect(s.action("t1", "constructor", {})).rejects.toMatchObject({ status: 404 });
+    await expect(s.action("nope", "set", {})).rejects.toMatchObject({ status: 404 });
+    await expect(s.action("u", "set", {})).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("passes action errors through without touching the widget status", async () => {
+    const { r, collect } = actionInstance();
+    const cache = createCache();
+    const s = createScheduler({ cache, instances: [r], env: {} });
+    await s.refresh("t1");
+    collect.mockClear();
+    await expect(s.action("t1", "set", { wrong: true })).rejects.toMatchObject({ status: 400 });
+    expect(collect).not.toHaveBeenCalled();
+    expect(cache.get("t1")).toMatchObject({ status: "ok", data: { n: 1 } });
+  });
+
+  it("treats refresh as a built-in action", async () => {
+    const { r, collect } = actionInstance();
+    const s = createScheduler({ cache: createCache(), instances: [r], env: {} });
+    await s.action("t1", "refresh", {});
+    expect(collect).toHaveBeenCalledTimes(1);
+  });
+});

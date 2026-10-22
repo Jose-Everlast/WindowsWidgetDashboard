@@ -45,6 +45,8 @@ export interface Scheduler {
   start(): void;
   stop(): void;
   refresh(instance: string): Promise<WidgetState>;
+  /** Runs a collector action, then collects; the returned state contains the change. */
+  action(instance: string, name: string, input: unknown): Promise<WidgetState>;
 }
 
 export function createScheduler(deps: {
@@ -85,6 +87,7 @@ export function createScheduler(deps: {
     // Wrapped so a synchronous throw inside collect() is a rejection too.
     const collecting = Promise.resolve().then(() =>
       collector.collect({
+        instance: r.instance,
         config: r.parsedConfig,
         env: deps.env,
         signal: controller.signal,
@@ -173,6 +176,7 @@ export function createScheduler(deps: {
     };
     try {
       const cleanup = collector.subscribe({
+        instance: r.instance,
         config: r.parsedConfig,
         env: deps.env,
         signal: controller.signal,
@@ -185,6 +189,13 @@ export function createScheduler(deps: {
       logError(scope, `subscribe fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
       controller.abort();
     }
+  }
+
+  function runnable(instance: string): ResolvedInstance {
+    const r = byId.get(instance);
+    if (!r) throw notFound(`instance "${instance}"`);
+    if (!r.loaded) throw new HttpError(409, r.initialError ?? `instance "${instance}" kann nicht laufen`);
+    return r;
   }
 
   return {
@@ -213,9 +224,31 @@ export function createScheduler(deps: {
       }
     },
     async refresh(instance) {
-      const r = byId.get(instance);
-      if (!r) throw notFound(`instance "${instance}"`);
-      if (!r.loaded) throw new HttpError(409, r.initialError ?? `instance "${instance}" kann nicht laufen`);
+      return run(runnable(instance));
+    },
+    async action(instance, name, input) {
+      const r = runnable(instance);
+      if (name === "refresh") return run(r);
+      const actions = r.loaded!.collector.actions;
+      // hasOwn: "constructor" or "toString" must not resolve to prototype functions.
+      if (!actions || !Object.hasOwn(actions, name)) throw new HttpError(404, "unknown action");
+      const scope = `widget:${r.type}/${r.instance}`;
+      // Errors (e.g. HttpError 400 for bad input) go to the caller; the widget status stays as it is.
+      await actions[name]!(
+        {
+          instance: r.instance,
+          config: r.parsedConfig,
+          env: deps.env,
+          signal: AbortSignal.timeout(r.loaded!.manifest.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+          log: (...args) => log(scope, ...args),
+        },
+        input,
+      );
+      // A poll that started before the change would hand back the old state: let it finish, then collect anew.
+      await inflight.get(r.instance)?.then(
+        () => undefined,
+        () => undefined,
+      );
       return run(r);
     },
   };

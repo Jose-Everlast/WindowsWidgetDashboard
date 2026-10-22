@@ -57,6 +57,7 @@ Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst.
 | `agents` | Claude-/Codex-Sessions je Projekt, aktiv/inaktiv | Session-Logs, `tasklist` |
 | `relaunch-radar` | Autopilot, laufende Jobs, „wartet auf dich“, letzte Ereignisse (live per SSE) | relaunch-radar-API, Fallback `logs/notifications.json` |
 | `mail` | gemeinsame Inbox: Ungelesen-Zähler je Konto, letzte Mails aller Konten ([Einrichtung](widgets/mail/README.md)) | Gmail-API, Microsoft Graph, IMAP |
+| `notes` | Post-its: direkt in der Kachel tippen, einfärben, abhaken | `data/notes/<instanz>.json` |
 | `external` | beliebige WidgetView-JSONs anderer Projekte | HTTP oder Datei |
 
 Details und Konfiguration stehen in der README des jeweiligen Ordners unter `widgets/<typ>/`.

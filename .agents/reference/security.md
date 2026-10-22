@@ -22,4 +22,4 @@ Gilt für alles unter `server/` und für jeden Widget-Collector. Das Dashboard l
 
 ## Tests
 
-Die OAuth-Routen haben eigene Tests in `server/routes/auth.test.ts` (state single use, Provider-Mismatch, Text-Antworten, Host-Guard, kein SPA-Fallback). Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).
+Aktions-Eingaben (`POST /api/widgets/:instance/actions/:action`) sind Browser-Input: jede Aktion prüft ihre Eingabe strikt und hat einen Test für 400 bei ungültiger Eingabe. Aktionsnamen werden mit `Object.hasOwn` nachgeschlagen, damit `constructor` o. ä. nicht auf Prototyp-Funktionen zeigt. Die OAuth-Routen haben eigene Tests in `server/routes/auth.test.ts` (state single use, Provider-Mismatch, Text-Antworten, Host-Guard, kein SPA-Fallback). Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).

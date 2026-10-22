@@ -33,9 +33,16 @@ export interface WidgetManifest<C extends z.ZodType = z.ZodType, T extends z.Zod
   capabilities: Capability[];
   /** Hint that the payload is a generic WidgetView of this type. */
   view?: WidgetViewType;
+  /**
+   * Rendered without a tile and outside the grid (Widget.tsx required), e.g. post-its floating over the
+   * dashboard. x/y/w/h of the instance are ignored.
+   */
+  overlay?: boolean;
 }
 
 export interface CollectContext<C> {
+  /** Instance ID from dashboard.config.json (kebab-case), e.g. for per-instance files. */
+  instance: string;
   config: C;
   env: Record<string, string | undefined>;
   signal: AbortSignal;
@@ -43,6 +50,7 @@ export interface CollectContext<C> {
 }
 
 export interface SubscribeContext<C> {
+  instance: string;
   config: C;
   env: Record<string, string | undefined>;
   /** Aborted when the scheduler stops. */
@@ -59,7 +67,11 @@ export interface WidgetCollector<C, T> {
    * Data still comes only through collect(). Clean up via ctx.signal or the returned function.
    */
   subscribe?(ctx: SubscribeContext<C>): void | (() => void);
-  /** Extra actions; "refresh" is built in and provided by the scheduler. */
+  /**
+   * Extra actions, called via POST /api/widgets/:instance/actions/:name with a JSON body as input.
+   * The input is browser input: validate it. An action changes its source and returns nothing the
+   * UI relies on; the scheduler collects afterwards. "refresh" is built in.
+   */
   actions?: Record<string, (ctx: CollectContext<C>, input: unknown) => Promise<unknown>>;
 }
 

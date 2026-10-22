@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import { collector } from "./collector";
 
-const ctx = <C>(config: C) => ({ config, env: {}, signal: AbortSignal.timeout(5000), log: () => {} });
+const ctx = <C>(config: C) => ({ instance: "external", config, env: {}, signal: AbortSignal.timeout(5000), log: () => {} });
 
 let server: Server | undefined;
 afterEach(() => new Promise<void>(resolve => (server ? server.close(() => resolve()) : resolve())));
