@@ -1,9 +1,9 @@
 // OAuth tokens per mail account in data/tokens/<account>.json (gitignored, never logged, never served).
 // One lock per account: collect() and the login callback must not refresh at the same time, because
 // Microsoft rotates the refresh token on every use.
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
+import { readJsonFile, withLock, writeJsonFileAtomic } from "../lib/json-file";
 import { refreshAccessToken, type OAuthClientOptions, type OAuthProviderId } from "./providers";
 
 export { OAuthError, ReauthRequiredError } from "./providers";
@@ -44,69 +44,22 @@ export interface TokenStoreOptions extends Omit<OAuthClientOptions, "env"> {
 
 export function createTokenStore(o: TokenStoreOptions): TokenStore {
   const now = o.now ?? Date.now;
-  const locks = new Map<string, Promise<unknown>>();
 
   const fileOf = (account: string) => {
     if (!ACCOUNT_ID.test(account)) throw new Error(`Ungültige Konto-ID "${account}"`);
     return join(o.dir, `${account}.json`);
   };
 
-  function withLock<T>(account: string, fn: () => Promise<T>): Promise<T> {
-    const prev = locks.get(account) ?? Promise.resolve();
-    const next = prev.then(fn, fn);
-    const settled = next.then(
-      () => undefined,
-      () => undefined,
-    );
-    locks.set(account, settled);
-    void settled.then(() => {
-      if (locks.get(account) === settled) locks.delete(account);
-    });
-    return next;
-  }
-
-  async function read(account: string): Promise<StoredToken | null> {
-    const file = fileOf(account);
-    let text: string;
-    try {
-      text = await readFile(file, "utf8");
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
-      throw err;
-    }
-    let json: unknown;
-    try {
-      json = JSON.parse(text);
-    } catch {
-      throw new Error(`${file}: kein gültiges JSON`);
-    }
-    const parsed = StoredToken.safeParse(json);
-    // The content holds secrets: report the file, not what is in it.
-    if (!parsed.success) throw new Error(`${file}: unerwartetes Format`);
-    return parsed.data;
-  }
-
-  async function save(account: string, token: Omit<StoredToken, "savedAt">): Promise<void> {
-    const file = fileOf(account);
-    await mkdir(o.dir, { recursive: true });
-    const tmp = `${file}.tmp`;
-    await writeFile(tmp, JSON.stringify({ ...token, savedAt: new Date(now()).toISOString() }, null, 2), "utf8");
-    try {
-      await rename(tmp, file);
-    } catch (err) {
-      // Windows: EPERM/EBUSY while another handle reads the target. Retry once.
-      const code = (err as NodeJS.ErrnoException).code;
-      if (code !== "EPERM" && code !== "EBUSY") throw err;
-      await new Promise(r => setTimeout(r, 50));
-      await rename(tmp, file);
-    }
-  }
+  // The content holds secrets: errors name the file, never what is in it.
+  const read = async (account: string) => readJsonFile(fileOf(account), StoredToken);
+  const save = (account: string, token: Omit<StoredToken, "savedAt">) =>
+    writeJsonFileAtomic(fileOf(account), { ...token, savedAt: new Date(now()).toISOString() });
 
   return {
     read,
-    save: (account, token) => withLock(account, () => save(account, token)),
+    save: (account, token) => withLock(fileOf(account), () => save(account, token)),
     accessToken: (account, provider, env, signal, opts) =>
-      withLock(account, async () => {
+      withLock(fileOf(account), async () => {
         const stored = await read(account);
         if (!stored || stored.provider !== provider) throw new NotConnectedError(`Konto "${account}" ist nicht verbunden`);
         if (!opts?.force && stored.accessToken && stored.expiresAt !== null && stored.expiresAt - EXPIRY_MARGIN_MS > now()) {
@@ -127,7 +80,7 @@ export function createTokenStore(o: TokenStoreOptions): TokenStore {
 
 const shared = new Map<string, TokenStore>();
 
-/** One store per directory, so the mail collector and the auth routes share the per-account locks. */
+/** One store per directory for the mail collector and the auth routes (locks are keyed by file path anyway). */
 export function tokenStoreFor(dir: string): TokenStore {
   let store = shared.get(dir);
   if (!store) shared.set(dir, (store = createTokenStore({ dir })));
