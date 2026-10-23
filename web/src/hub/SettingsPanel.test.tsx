@@ -5,7 +5,7 @@ import { SettingsPanel } from "./SettingsPanel";
 
 // The app's own context hook, not an external service.
 const updateSettings = vi.fn(async () => {});
-let settings: { tileBackground: boolean; tileBorder: boolean } | null = { tileBackground: true, tileBorder: false };
+let settings: { tileBackground: boolean; tileBorder: boolean; gameOfLife: boolean } | null = { tileBackground: true, tileBorder: false, gameOfLife: true };
 vi.mock("./DashboardProvider", () => ({ useDashboard: () => ({ settings, updateSettings }) }));
 
 afterEach(() => {

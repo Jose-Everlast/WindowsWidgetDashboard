@@ -6,6 +6,7 @@ import { useDashboard } from "./DashboardProvider";
 const OPTIONS: Array<{ key: keyof UiSettings; label: string; hint: string }> = [
   { key: "tileBackground", label: "Kachel-Hintergrund", hint: "Aus: Inhalte stehen direkt auf dem Hintergrund" },
   { key: "tileBorder", label: "Kachel-Rahmen", hint: "Rahmen und leuchtende Ecken" },
+  { key: "gameOfLife", label: "Game of Life", hint: "Zellen leben und sterben im Hintergrund" },
 ];
 
 function Switch({ on, label, hint, onChange }: { on: boolean; label: string; hint: string; onChange: (on: boolean) => void }) {

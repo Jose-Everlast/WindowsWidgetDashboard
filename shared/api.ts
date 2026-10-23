@@ -35,6 +35,7 @@ export type TypesResponse = Array<{
 export interface UiSettings {
   tileBackground: boolean;
   tileBorder: boolean;
+  gameOfLife: boolean;
 }
 
 export interface HealthResponse {

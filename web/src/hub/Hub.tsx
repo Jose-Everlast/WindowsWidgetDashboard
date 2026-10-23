@@ -5,6 +5,7 @@ import { useDashboard } from "./DashboardProvider";
 import { OfflineBanner } from "./OfflineBanner";
 import { widgetComponents } from "./registry";
 import { SettingsPanel } from "./SettingsPanel";
+import { GameOfLife } from "./GameOfLife";
 import { ErrorBoundary, ROW_UNIT_PX, WidgetFrame } from "./WidgetFrame";
 
 /** Overlay widgets (manifest.overlay) render without a tile, above the grid. */
@@ -37,6 +38,7 @@ export function Hub() {
   return (
     <>
       {!online && <OfflineBanner />}
+      {settings?.gameOfLife !== false && <GameOfLife />}
       <div aria-hidden className="hud-scanlines" />
       <main
         data-tile-bg={settings?.tileBackground === false ? "off" : "on"}

@@ -7,6 +7,7 @@ import { readJsonFile, withLock, writeJsonFileAtomic } from "./lib/json-file";
 const UiSettingsFile = z.object({
   tileBackground: z.boolean().default(true),
   tileBorder: z.boolean().default(true),
+  gameOfLife: z.boolean().default(true),
 });
 export const DEFAULT_SETTINGS: UiSettings = UiSettingsFile.parse({});
 
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: UiSettings = UiSettingsFile.parse({});
 export const UiSettingsPatch = z.strictObject({
   tileBackground: z.boolean().optional(),
   tileBorder: z.boolean().optional(),
+  gameOfLife: z.boolean().optional(),
 });
 
 export interface SettingsStore {

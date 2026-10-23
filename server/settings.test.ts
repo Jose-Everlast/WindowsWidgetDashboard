@@ -17,19 +17,19 @@ describe("settings store", () => {
     const seen = vi.fn();
     const off = store.onChange(seen);
     await store.update({ tileBackground: false });
-    expect(seen).toHaveBeenCalledWith({ tileBackground: false, tileBorder: true });
+    expect(seen).toHaveBeenCalledWith({ tileBackground: false, tileBorder: true, gameOfLife: true });
     off();
     await store.update({ tileBorder: false });
     expect(seen).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({ tileBackground: false, tileBorder: false });
-    expect((await createSettingsStore(file)).get()).toEqual({ tileBackground: false, tileBorder: false });
+    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({ tileBackground: false, tileBorder: false, gameOfLife: true });
+    expect((await createSettingsStore(file)).get()).toEqual({ tileBackground: false, tileBorder: false, gameOfLife: true });
   });
 
   it("falls back to defaults on a broken file and says so", async () => {
     const file = join(dir, "ui-settings.json");
     writeFileSync(file, "{kaputt");
     const log = vi.fn();
-    expect((await createSettingsStore(file, log)).get()).toEqual({ tileBackground: true, tileBorder: true });
+    expect((await createSettingsStore(file, log)).get()).toEqual({ tileBackground: true, tileBorder: true, gameOfLife: true });
     expect(log).toHaveBeenCalledWith(expect.stringMatching(/kein gültiges JSON – Standardwerte/));
   });
 });

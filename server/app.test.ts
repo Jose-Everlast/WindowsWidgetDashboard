@@ -133,10 +133,10 @@ describe("/api/settings", () => {
     createApp(deps).request("/api/settings", { method: "PUT", headers, body });
 
   it("reads defaults and stores a change", async () => {
-    expect(await (await createApp(deps).request("/api/settings")).json()).toEqual({ tileBackground: true, tileBorder: true });
+    expect(await (await createApp(deps).request("/api/settings")).json()).toEqual({ tileBackground: true, tileBorder: true, gameOfLife: true });
     const res = await put('{"tileBorder":false}');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ tileBackground: true, tileBorder: false });
+    expect(await res.json()).toEqual({ tileBackground: true, tileBorder: false, gameOfLife: true });
     expect(deps.settings.get().tileBorder).toBe(false);
   });
 
@@ -145,7 +145,7 @@ describe("/api/settings", () => {
     expect((await put('{"evil":true}')).status).toBe(400);
     expect((await put('{"tileBorder":false}', { "content-type": "text/plain" })).status).toBe(415);
     expect((await put('{"tileBorder":false}', { "content-type": "application/json", origin: "https://evil.example" })).status).toBe(403);
-    expect(deps.settings.get()).toEqual({ tileBackground: true, tileBorder: true });
+    expect(deps.settings.get()).toEqual({ tileBackground: true, tileBorder: true, gameOfLife: true });
   });
 });
 
