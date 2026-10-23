@@ -1,0 +1,104 @@
+{
+  "chats": [
+    {
+      "key": "discord:Kontakt 2",
+      "app": "discord",
+      "appLabel": "Discord",
+      "color": "#5865f2",
+      "title": "Kontakt 2",
+      "text": "Nachricht 4",
+      "at": "2026-10-22T08:03:00.000Z",
+      "unread": 1,
+      "lines": [
+        {
+          "id": "wpn:4",
+          "text": "Nachricht 4",
+          "at": "2026-10-22T08:03:00.000Z"
+        }
+      ]
+    },
+    {
+      "key": "teams:Kontakt 1",
+      "app": "teams",
+      "appLabel": "Teams",
+      "color": "#7b83eb",
+      "title": "Kontakt 1",
+      "text": "Nachricht 3",
+      "at": "2026-10-22T08:02:00.000Z",
+      "unread": 1,
+      "lines": [
+        {
+          "id": "wpn:3",
+          "text": "Nachricht 3",
+          "at": "2026-10-22T08:02:00.000Z"
+        }
+      ]
+    },
+    {
+      "key": "whatsapp:Chat 1",
+      "app": "whatsapp",
+      "appLabel": "WhatsApp",
+      "color": "#25d366",
+      "title": "Chat 1",
+      "text": "Nachricht 2",
+      "at": "2026-10-22T08:01:00.000Z",
+      "unread": 2,
+      "lines": [
+        {
+          "id": "wpn:1",
+          "text": "Nachricht 1",
+          "at": "2026-10-22T08:00:00.000Z"
+        },
+        {
+          "id": "wpn:2",
+          "text": "Nachricht 2",
+          "at": "2026-10-22T08:01:00.000Z"
+        }
+      ]
+    }
+  ],
+  "unread": 4,
+  "apps": [
+    {
+      "id": "whatsapp",
+      "label": "WhatsApp",
+      "color": "#25d366",
+      "muted": false
+    },
+    {
+      "id": "teams",
+      "label": "Teams",
+      "color": "#7b83eb",
+      "muted": false
+    },
+    {
+      "id": "discord",
+      "label": "Discord",
+      "color": "#5865f2",
+      "muted": false
+    },
+    {
+      "id": "slack",
+      "label": "Slack",
+      "color": "#e01e5a",
+      "muted": false
+    },
+    {
+      "id": "lark",
+      "label": "Lark",
+      "color": "#3370ff",
+      "muted": false
+    },
+    {
+      "id": "outlook",
+      "label": "Outlook",
+      "color": "#0f6cbd",
+      "muted": false
+    }
+  ],
+  "undo": null,
+  "source": {
+    "toasts": 4,
+    "copied": false
+  }
+}

@@ -129,6 +129,13 @@
       "config": {
         "label": "JARVIS"
       }
+    },
+    {
+      "instance": "nachrichten",
+      "type": "messenger",
+      "x": 6,
+      "y": 6,
+      "config": {}
     }
   ]
 }

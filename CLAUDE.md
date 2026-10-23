@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**windowsDashboard** is a personal dashboard for one Windows 11 machine. It is shown as an interactive desktop wallpaper through [Lively Wallpaper](https://www.rocksdanister.com/lively/). A local Node server collects data from widgets (weather, news, system, ports, Claude/Codex agents, relaunch-radar, …) and serves a React UI on `http://127.0.0.1:4700`. It reads data only. It never sends mail or messages and never changes foreign tools. `PRD.md` is the north star; phases 1–3 of 7 are done.
+**windowsDashboard** is a personal dashboard for one Windows 11 machine. It is shown as an interactive desktop wallpaper through [Lively Wallpaper](https://www.rocksdanister.com/lively/). A local Node server collects data from widgets (weather, news, system, ports, Claude/Codex agents, relaunch-radar, …) and serves a React UI on `http://127.0.0.1:4700`. It reads data only. It never sends mail or messages and never changes foreign tools. `PRD.md` is the north star; phases 1–5 of 7 are implemented (phase 5 still needs a check against real messenger toasts).
 
 ## Tech Stack
 

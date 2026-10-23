@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "primaryId": "5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App",
+    "type": "toast",
+    "tag": "t1",
+    "group": "",
+    "arrivalTime": "134371446636205415",
+    "payload": "<?xml version=\"1.0\" encoding=\"…\"?><toast launch=\"…\"><visual><binding template=\"ToastGeneric\"><text>Chat 1</text><text>Nachricht 1</text><group><subgroup hint-textStacking=\"center\" hint-weight=\"5\"><text hint-align=\"center\" hint-style=\"bodySubtle\">✉ 1 ungelesene Nachricht</text></subgroup></group><image src=\"…\" placement=\"appLogoOverride\" hint-crop=\"circle\" /></binding></visual><audio src=\"…\" /><actions><input id=\"…\" type=\"text\" placeHolderContent=\"…\" /><action content=\"…\" arguments=\"…\" activationType=\"background\" hint-inputId=\"quickReplyInputBoxId\" /><action content=\"…\" arguments=\"…\" activationType=\"background\" placement=\"contextMenu\" /><action content=\"…\" arguments=\"…\" activationType=\"background\" placement=\"contextMenu\" /><action content=\"…\" arguments=\"…\" activationType=\"background\" placement=\"contextMenu\" /><action content=\"…\" arguments=\"…\" activationType=\"background\" placement=\"contextMenu\" /></actions></toast>"
+  },
+  {
+    "id": 2,
+    "primaryId": "Microsoft.OutlookForWindows_8wekyb3d8bbwe!Microsoft.OutlookforWindows",
+    "type": "toast",
+    "tag": "",
+    "group": "",
+    "arrivalTime": "134372164595415646",
+    "payload": "<toast activationType=\"foreground\" launch=\"…\"><visual><binding template=\"ToastGeneric\"><text>Kontakt 1</text><text>Nachricht 1</text><text>Nachricht 2</text><image src=\"…\" placement=\"appLogoOverride\" hint-crop=\"circle\"/></binding></visual><audio src=\"ms-winsoundevent:Notification.Mail\"/><actions><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/></actions></toast>"
+  },
+  {
+    "id": 3,
+    "primaryId": "Microsoft.OutlookForWindows_8wekyb3d8bbwe!Microsoft.OutlookforWindows",
+    "type": "toast",
+    "tag": "",
+    "group": "",
+    "arrivalTime": "134372144916980657",
+    "payload": "<toast activationType=\"foreground\" launch=\"…\"><visual><binding template=\"ToastGeneric\"><text>Kontakt 2</text><text>Nachricht 3</text><text>+1 neue E-Mail</text><image src=\"…\" placement=\"appLogoOverride\" hint-crop=\"circle\"/></binding></visual><audio src=\"ms-winsoundevent:Notification.Mail\"/><actions><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/><action activationType=\"background\" content=\"…\" imageUri=\"…\" arguments=\"…\"/></actions></toast>"
+  }
+]

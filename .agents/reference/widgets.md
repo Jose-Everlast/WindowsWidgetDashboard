@@ -30,6 +30,13 @@ Laden, wenn ein Widget angelegt oder geändert wird. Den Vertrag selbst definier
    - Pro Instanz eigene Dateien über `ctx.instance` (z. B. `data/notes/<instance>.json`).
 12. **Overlay-Widgets** (`manifest.overlay: true`, z. B. `widgets/notes`): kein Rahmen, kein Rasterplatz; `Widget.tsx` ist Pflicht (Vertragstest) und rendert selbst eine `fixed`-Ebene mit `pointer-events-none`, nur die eigenen Elemente bekommen `pointer-events-auto`.
 13. **Teure Effekte meiden** (das Wallpaper läuft rund um die Uhr): animiert wird nur `transform`/`opacity`. Kein `mask-image` und kein CSS-`filter` auf Elementen mit bewegtem Inhalt, sonst wird jeder Frame neu gezeichnet; Kanten und Glow statisch darüberlegen (siehe `.hud-ticker`, `widgets/core`). Frame-Zeiten nur im sichtbaren Tab messen: Chrome drosselt `requestAnimationFrame` im Hintergrund auf ≈ 1/s.
+14. **Fremde SQLite-Datenbanken** (Muster `widgets/messenger/wpn.ts`):
+   - nur mit `new DatabaseSync(path, { readOnly: true })` öffnen, nie schreiben
+   - 64-bit-Werte wie FILETIME mit `stmt.setReadBigInts(true)` lesen; als `number` verlieren sie Stellen
+   - bei Sperre (`errcode` 5/6/14) `db`, `-wal` und `-shm` gemeinsam kopieren und die Kopie lesen; das Temp-Verzeichnis immer löschen
+   - Inhalte nie loggen, auch nicht in Fehlermeldungen; nur Pfade und Zähler
+   - ein `fs.watch` als Push-Auslöser reagiert nur auf `db` und `-wal`, nicht auf `-shm`
+   - Test-Datenbanken entstehen zur Laufzeit aus dem aufgezeichneten Schema (`*.db` ist gitignored)
 
 ## Tests
 

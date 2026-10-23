@@ -58,6 +58,7 @@ Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst.
 | `relaunch-radar` | Autopilot, laufende Jobs, „wartet auf dich“, letzte Ereignisse (live per SSE) | relaunch-radar-API, Fallback `logs/notifications.json` |
 | `mail` | gemeinsame Inbox: Ungelesen-Zähler je Konto, letzte Mails aller Konten ([Einrichtung](widgets/mail/README.md)) | Gmail-API, Microsoft Graph, IMAP |
 | `core` | HUD-Kern: Uhr, drehende Ringe mit CPU-/RAM-Bögen, Uptime | Node `os` |
+| `messenger` | Chats von WhatsApp, Teams, Discord, Slack und Lark plus Outlook-Benachrichtigungen, gesammelt pro Chat bzw. Absender mit Ungelesen-Zählern; bleiben auch nach dem Wegklicken im Info-Center ([Details](widgets/messenger/README.md)) | Windows-Benachrichtigungsdatenbank (nur lesend), `data/messages/<instanz>.json` |
 | `notes` | Post-its: direkt in der Kachel tippen, einfärben, abhaken | `data/notes/<instanz>.json` |
 | `external` | beliebige WidgetView-JSONs anderer Projekte | HTTP oder Datei |
 

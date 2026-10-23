@@ -22,7 +22,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 **Mission:** Ein Blick auf den Desktop ersetzt das tägliche Durchklicken durch ein Dutzend Apps und Terminals.
 
 **Kernprinzipien:**
-1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version. Ausgenommen sind eigene Daten des Dashboards wie Notizen (Post-its); fremde Dienste bleiben unberührt.
+1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version. Ausgenommen sind eigene Daten des Dashboards wie Notizen (Post-its) oder der gesammelte Messenger-Verlauf mit seinem Gelesen-Stand; fremde Dienste bleiben unberührt.
 2. **Echte Daten oder ein sichtbarer Fehler.** Es gibt keine Mocks und keine stillen Fallbacks. Fehlt eine Konfiguration, zeigt das Widget genau das an.
 3. **Lokal und privat.** Alles läuft auf `127.0.0.1`. Tokens und Daten verlassen den Rechner nur bei den direkten API-Aufrufen an die jeweiligen Dienste. An die KI (Anthropic über die Claude-CLI, OpenAI für den Chat) geht nur ein kompakter Daten-Snapshot, also Betreffzeilen, Absender, Zähler und Status, keine vollständigen Mail-Texte. Dieser Kontext lässt sich abschalten.
 4. **Ein Widget ist ein Modul.** Jedes Widget ist ein Ordner unter `widgets/`, der den Widget-Vertrag erfüllt (siehe 6.1). Ein neues Widget heißt: Ordner anlegen und in die Konfiguration eintragen. Am Kern ändert sich nichts.
@@ -54,7 +54,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 - ✅ Claude-Agents-Widget: laufende `claude`- und `codex`-Prozesse mit Projekt und letzter Aktivität
 - ✅ relaunch-radar-Widget: Autopilot-Status, laufende Jobs, letzte Benachrichtigungen, live per SSE
 - ✅ Mail-Widget: eine gemeinsame Inbox für Gmail, Outlook und IMAP mit Ungelesen-Zählern pro Konto
-- ✅ Messenger-Widget: WhatsApp, Teams, Discord und Lark aus der Windows-Benachrichtigungsdatenbank
+- ✅ Messenger-Widget: WhatsApp, Teams, Discord, Slack und Lark sowie Outlook-Mail-Benachrichtigungen aus der Windows-Benachrichtigungsdatenbank, gesammelt pro Chat (Verlauf, Ungelesen-Zähler, ausblenden, rückgängig, Apps stummschalten) wie in der Android-App; gespeichert in `data/messages/`, damit weggeklickte Toasts erhalten bleiben. Antworten und „in der App gelesen“ gibt es nicht.
 - ✅ Klick auf eine Mail, eine Nachricht oder eine News öffnet das Ziel im Standardbrowser bzw. in der App
 - ✅ Notiz-Widget (Post-its): direkt in der Kachel anlegen, bearbeiten, einfärben, abhaken und löschen, gespeichert in `data/notes/`
 - ✅ Briefing-Widget: Claude erstellt über `claude -p` aus dem Snapshot aller Widgets einen Tagesüberblick, morgens automatisch und per Knopf neu
@@ -315,9 +315,11 @@ Darauf baut das eingebaute Widget **`external`** auf. Jedes lokale Projekt kann 
 - Ohne `OPENAI_API_KEY` ist das Widget `unconfigured`.
 
 **Details zum Messenger-Collector:**
-- Die Datenbank wird mit `node:sqlite` nur lesend geöffnet. Ist die Datei gesperrt, wird sie vorher in ein temporäres Verzeichnis kopiert.
+- Die Datenbank wird mit `node:sqlite` nur lesend geöffnet (gemessen 2026-10-22: 8 ms). Ist die Datei gesperrt, werden `wpndatabase.db`, `-wal` und `-shm` in ein temporäres Verzeichnis kopiert; ohne `-wal` fehlten die neuesten Toasts. `ArrivalTime` ist eine FILETIME und wird als BigInt gelesen.
 - Die Tabellen `Notification` und `NotificationHandler` werden gejoint. Die App wird über die AppUserModelID/PrimaryId erkannt; die Zuordnung zu WhatsApp, Teams usw. ist konfigurierbar.
 - Der Toast-XML-Payload wird geparst und `<text>`-Elemente werden zu Titel und Text.
+- Kumuliert wird pro Chat (App + Titel, wahlweise Toast-`Group`/`Tag`) in `data/messages/<instanz>.json`: höchstens 50 Chats mit je 10 Nachrichten. Ausblenden, Leeren, Rückgängig, Stummschalten und „gelesen“ sind Widget-Aktionen und ändern nur diese Datei.
+- `fs.watch` auf den Notifications-Ordner löst bei Änderungen an `wpndatabase.db` bzw. `-wal` sofort einen Collect aus; das Polling alle 30 s bleibt als Sicherheitsnetz.
 
 **Details zum Ports-Collector:** Einziger PowerShell-Aufruf ist `runPs()`. Das Skript gibt JSON aus (`ConvertTo-Json`), damit Node nichts aus Textausgaben herausparsen muss.
 
@@ -501,8 +503,9 @@ Jede Phase ist ein eigener Zyklus aus `/plan-feature` → `/execute` → `/valid
 
 **Validierung:** Ungelesen-Zähler im Abgleich mit dem Webmail. Ohne Credentials erscheint `unconfigured`.
 
-### Phase 5 – Messenger (≈ 1 Session)
+### Phase 5 – Messenger (≈ 1 Session) ✔ umgesetzt (Abgleich mit echten Messenger-Toasts offen)
 - ✅ Leser für `wpndatabase.db`, Toast-XML-Parser, App-Mapping, Widget
+- ✅ Kumulierte Chats wie in der Android-App, eigener Speicher, Ordner-Watch als Push-Auslöser
 
 **Validierung:** Selbst geschickte Testnachrichten in WhatsApp und Teams erscheinen innerhalb von 30 s.
 
