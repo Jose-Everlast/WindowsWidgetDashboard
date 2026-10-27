@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_APPS, NO_TITLE, chatKeyOf, matchApp } from "./apps";
-import { App } from "./manifest";
+import { DEFAULT_APPS, NO_TITLE, appsOf, chatKeyOf, matchApp } from "./apps";
+import { App, MessengerConfig } from "./manifest";
+
+describe("appsOf", () => {
+  const ids = (c: unknown) => appsOf(MessengerConfig.parse(c)).map(a => a.id);
+
+  it("narrows the apps with only and except, so one app can get its own tile", () => {
+    expect(ids({})).toEqual(DEFAULT_APPS.map(a => a.id));
+    expect(ids({ only: ["slack"] })).toEqual(["slack"]);
+    expect(ids({ except: ["slack"] })).toEqual(["whatsapp", "teams", "discord", "lark", "outlook"]);
+  });
+
+  it("rejects unknown app IDs and a filter that leaves no app", () => {
+    expect(MessengerConfig.safeParse({ only: ["icq"] }).success).toBe(false);
+    expect(MessengerConfig.safeParse({ except: ["icq"] }).success).toBe(false);
+    expect(MessengerConfig.safeParse({ only: ["slack"], except: ["slack"] }).success).toBe(false);
+  });
+});
 
 describe("matchApp", () => {
   it.each([

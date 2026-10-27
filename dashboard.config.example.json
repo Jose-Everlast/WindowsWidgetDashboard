@@ -135,7 +135,15 @@
       "type": "messenger",
       "x": 6,
       "y": 6,
-      "config": {}
+      "config": { "except": ["slack"] }
+    },
+    {
+      "instance": "slack",
+      "type": "messenger",
+      "title": "Slack",
+      "x": 9,
+      "y": 9,
+      "config": { "only": ["slack"] }
     }
   ]
 }

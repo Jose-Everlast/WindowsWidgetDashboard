@@ -1,6 +1,11 @@
 // Which app a toast belongs to and which chat it is part of. Pure: no Node APIs.
 import type { App } from "./manifest";
 
+/** The apps this instance shows: config.apps narrowed by only/except, e.g. one tile just for Slack. */
+export function appsOf(config: { apps: App[]; only?: string[]; except?: string[] }): App[] {
+  return config.apps.filter(a => (!config.only || config.only.includes(a.id)) && !config.except?.includes(a.id));
+}
+
 /**
  * AppUserModelIDs seen on Windows 11 (NotificationHandler.PrimaryId), matched as substrings:
  * WhatsApp Desktop 5319275A.WhatsAppDesktop_…!App, Teams MSTeams_…!MSTeams (classic: com.squirrel.Teams.Teams),

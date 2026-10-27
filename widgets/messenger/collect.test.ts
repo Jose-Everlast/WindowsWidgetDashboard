@@ -9,6 +9,7 @@ import { readToasts } from "./wpn";
 
 const WA = "5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App";
 const TEAMS = "MSTeams_8wekyb3d8bbwe!MSTeams";
+const SLACK = "com.tinyspeck.slackdesktop_8yrtsj140pw4g!Slack";
 const DOCKER = "Docker.DockerForWindows.Settings";
 const T0 = Date.UTC(2026, 9, 22, 8, 0, 0);
 const min = (n: number) => T0 + n * 60_000;
@@ -99,6 +100,25 @@ describe("collectMessenger", () => {
     if (process.env.UPDATE_FIXTURES) {
       writeFileSync(new URL("./fixtures/messenger.json", import.meta.url), `${JSON.stringify(data, null, 2)}\n`);
     }
+  });
+
+  it("shows only the apps left by only/except, each instance in its own file", async () => {
+    writeToasts(db, [
+      { id: 1, primaryId: WA, at: min(0), payload: toastXml("Chat 1", "Nachricht 1") },
+      { id: 2, primaryId: SLACK, at: min(1), payload: toastXml("Kanal 1", "Nachricht 2") },
+    ]);
+    const run = (instance: string, filter: object) =>
+      collectMessenger(
+        { dataDir: join(dir, "data"), readToasts, now: () => min(10) },
+        { instance, config: { ...MessengerConfig.parse(filter), dbPath: db }, env: {} },
+      );
+    const slack = await run("slack", { only: ["slack"] });
+    expect(slack.chats.map(c => c.title)).toEqual(["Kanal 1"]);
+    expect(slack.apps.map(a => a.id)).toEqual(["slack"]);
+    expect(slack.source.toasts).toBe(1);
+    const rest = await run("nachrichten", { except: ["slack"] });
+    expect(rest.chats.map(c => c.title)).toEqual(["Chat 1"]);
+    expect(rest.apps.map(a => a.id)).not.toContain("slack");
   });
 
   it("finds the database under LOCALAPPDATA unless dbPath is set", () => {

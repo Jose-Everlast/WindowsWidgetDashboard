@@ -4,6 +4,7 @@ import { defineCollector } from "@shared/widget-contract";
 import { config as serverConfig } from "../../server/env";
 import { notFound } from "../../server/http";
 import { parseActionInput } from "../../server/lib/action-input";
+import { appsOf } from "./apps";
 import { collectMessenger, dbPathOf, type MessengerDeps } from "./collect";
 import { clear, dismiss, markAllRead, markRead, mute, undo, unmute, type Feed } from "./feed";
 import { AppIn, EmptyIn, KeyIn, manifest, type MessengerConfig } from "./manifest";
@@ -22,7 +23,7 @@ export function messengerCollector(dataDir: string, deps: Partial<Omit<Messenger
     mutateFeed(messagesFile(dataDir, instance), feed => ({ feed: fn(feed, d.now()), result: undefined }), "conflict");
   const appOf = (config: MessengerConfig, input: unknown) => {
     const { app } = parseActionInput(AppIn, input);
-    if (!config.apps.some(a => a.id === app)) throw notFound("App");
+    if (!appsOf(config).some(a => a.id === app)) throw notFound("App");
     return app;
   };
 

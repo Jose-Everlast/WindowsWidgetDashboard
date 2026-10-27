@@ -35,8 +35,16 @@ Neue Nachrichten erscheinen nach wenigen Sekunden, weil das Widget den Ordner de
 | Feld | Bedeutung |
 |---|---|
 | `apps` | Welche Apps erscheinen (Standard: die Tabelle unten). Pro App `id`, `label`, `match` (Teilzeichenketten der App-ID), `color` (`#rrggbb`), `chatKey` |
+| `only` / `except` | App-IDs aus `apps`, auf die die Instanz eingeschränkt wird bzw. die sie weglässt. So bekommt eine App eine eigene Kachel, siehe unten |
 | `ignoreTexts` | weitere Statustexte, die nicht erscheinen sollen (ganzer Text, Groß- und Kleinschreibung egal) |
 | `dbPath` | anderer Pfad zur Datenbank (Standard unter `%LOCALAPPDATA%`) |
+
+**Eigene Kachel für eine App** (z. B. Slack): eine zweite Instanz mit `only`, die erste mit `except`. Jede Instanz hat ihren eigenen Speicher und eigene Aktionen.
+
+```json
+{ "instance": "nachrichten", "type": "messenger", "x": 6, "y": 6, "config": { "except": ["slack"] } },
+{ "instance": "slack", "type": "messenger", "title": "Slack", "x": 9, "y": 9, "config": { "only": ["slack"] } }
+```
 
 `chatKey` legt fest, woran zwei Toasts als derselbe Chat erkannt werden: `title` (Chat- bzw. Absendername, Standard), `group` oder `tag` (Felder des Toasts). Ist das Feld leer, gilt der Titel.
 

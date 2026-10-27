@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineManifest } from "@shared/widget-contract";
-import { DEFAULT_APPS } from "./apps";
+import { DEFAULT_APPS, appsOf } from "./apps";
 
 export const MAX_CHATS = 50;
 export const MAX_LINES = 10;
@@ -33,9 +33,16 @@ export const MessengerConfig = z.object({
     .min(1)
     .refine(a => new Set(a.map(x => x.id)).size === a.length, "App-IDs müssen eindeutig sein")
     .default(DEFAULT_APPS),
+  /** Narrow the apps by ID, so one app can get its own tile: { only: ["slack"] } here, { except: ["slack"] } there. */
+  only: z.array(AppId).min(1).optional(),
+  except: z.array(AppId).optional(),
   /** Extra status texts to hide (whole text, case-insensitive), e.g. an app's own "running in the background". */
   ignoreTexts: z.array(z.string().min(1)).default([]),
-});
+})
+  .refine(c => [...(c.only ?? []), ...(c.except ?? [])].every(id => c.apps.some(a => a.id === id)), {
+    message: "only/except nennen eine App, die nicht in apps steht",
+  })
+  .refine(c => appsOf(c).length > 0, { message: "only/except lassen keine App übrig" });
 export type MessengerConfig = z.output<typeof MessengerConfig>;
 
 const Iso = z.string();

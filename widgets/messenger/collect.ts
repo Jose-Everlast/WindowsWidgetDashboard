@@ -1,6 +1,6 @@
 // The testable core of the messenger collector: read the toasts Windows holds, merge them into the
 // instance's own feed and build the payload. Injectable reader and clock.
-import { chatKeyOf, matchApp } from "./apps";
+import { appsOf, chatKeyOf, matchApp } from "./apps";
 import { addToasts, toPayload, type FeedItem } from "./feed";
 import type { App, MessengerConfig, MessengerData } from "./manifest";
 import { messagesFile, mutateFeed } from "./store";
@@ -39,12 +39,13 @@ export async function collectMessenger(
   ctx: { instance: string; config: MessengerConfig; env: Record<string, string | undefined> },
 ): Promise<MessengerData> {
   const { toasts, copied } = await deps.readToasts(dbPathOf(ctx.config, ctx.env));
-  const { items, matched } = toFeedItems(toasts, ctx.config.apps);
+  const apps = appsOf(ctx.config);
+  const { items, matched } = toFeedItems(toasts, apps);
   return mutateFeed(
     messagesFile(deps.dataDir, ctx.instance),
     feed => {
       const next = addToasts(feed, items, ctx.config.ignoreTexts);
-      return { feed: next, result: toPayload(next, ctx.config.apps, { toasts: matched, copied }, deps.now()) };
+      return { feed: next, result: toPayload(next, apps, { toasts: matched, copied }, deps.now()) };
     },
     "error",
   );
