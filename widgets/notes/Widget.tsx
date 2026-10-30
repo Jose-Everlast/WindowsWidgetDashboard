@@ -158,94 +158,111 @@ function StickyNote({
       data-note={note.id}
       onPointerDownCapture={onFront}
       style={{ left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, zIndex: z, rotate: lifted ? "0deg" : `${tiltOf(note.id)}deg` }}
-      className={`group pointer-events-auto absolute flex w-52 flex-col text-[#2b2a26] transition-[rotate,scale,box-shadow] duration-150 ${PAPER[note.color].paper} ${
-        lifted ? "scale-[1.03] shadow-[0_18px_30px_rgb(0_0_0/0.55)]" : "shadow-[0_8px_18px_rgb(0_0_0/0.45)]"
+      className={`group pointer-events-auto absolute w-52 text-[#2b2a26] transition-[rotate,scale,translate] duration-150 ${
+        lifted ? "-translate-y-1.5 scale-[1.04]" : "hover:-translate-y-0.5"
       } ${note.done ? "opacity-70" : ""}`}
     >
+      {/* 3D look from static layers only (rule: animate transform/opacity, never box-shadow):
+          the two lower corners curl up and cast slanted shadows, a soft lift shadow fades in on hover/drag. */}
+      <span aria-hidden className="pointer-events-none absolute bottom-3 left-2 h-1/4 w-1/2 origin-bottom-left -rotate-[4deg] bg-black/40 shadow-[0_12px_10px_rgb(0_0_0/0.6)]" />
+      <span aria-hidden className="pointer-events-none absolute right-2 bottom-3 h-1/4 w-1/2 origin-bottom-right rotate-[4deg] bg-black/40 shadow-[0_12px_10px_rgb(0_0_0/0.6)]" />
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute inset-1 shadow-[0_24px_36px_rgb(0_0_0/0.55)] transition-opacity duration-150 ${
+          lifted ? "opacity-100" : "opacity-0 group-hover:opacity-60"
+        }`}
+      />
       <div
-        role="button"
-        tabIndex={0}
-        aria-label="Notiz verschieben (ziehen oder Pfeiltasten)"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onKeyDown={onGripKey}
-        className={`flex h-7 cursor-grab touch-none items-center gap-1 px-1.5 active:cursor-grabbing ${PAPER[note.color].strip}`}
+        className={`relative flex flex-col overflow-hidden rounded-br-[3rem_0.4rem] rounded-bl-[3rem_0.4rem] shadow-[0_1px_2px_rgb(0_0_0/0.35)] ${PAPER[note.color].paper}`}
       >
-        <GripHorizontal className="size-4 opacity-40" aria-hidden />
+        {/* Paper shading: light from the top, the curled bottom edge a touch darker. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgb(255_255_255/0.28),transparent_35%,transparent_75%,rgb(0_0_0/0.09))]"
+        />
         <div
-          className="ml-auto flex items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+          role="button"
+          tabIndex={0}
+          aria-label="Notiz verschieben (ziehen oder Pfeiltasten)"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onKeyDown={onGripKey}
+          className={`relative flex h-7 cursor-grab touch-none items-center gap-1 px-1.5 shadow-[inset_0_-1px_0_rgb(0_0_0/0.08)] active:cursor-grabbing ${PAPER[note.color].strip}`}
         >
-          <button
-            type="button"
-            aria-label="Neues Post-it daneben"
-            onClick={() => onAdd(pos)}
-            className="grid size-6 place-items-center rounded-sm hover:bg-black/10"
+          <GripHorizontal className="size-4 opacity-40" aria-hidden />
+          <div
+            className="ml-auto flex items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
           >
-            <Plus className="size-4" />
-          </button>
-          <button
-            type="button"
-            aria-label={note.done ? "als offen markieren" : "als erledigt markieren"}
-            aria-pressed={note.done}
-            onClick={() => void act("update", { id: note.id, done: !note.done })}
-            className={`grid size-6 place-items-center rounded-sm hover:bg-black/10 ${note.done ? "text-[#1f7a3a]" : ""}`}
-          >
-            <Check className="size-4" />
-          </button>
-          {NOTE_COLORS.map(c => (
             <button
-              key={c}
               type="button"
-              aria-label={`Farbe ${PAPER[c].label}`}
-              aria-pressed={note.color === c}
-              onClick={() => note.color !== c && void act("update", { id: note.id, color: c })}
+              aria-label="Neues Post-it daneben"
+              onClick={() => onAdd(pos)}
               className="grid size-6 place-items-center rounded-sm hover:bg-black/10"
             >
-              <span className={`size-3 rounded-full border border-black/30 ${PAPER[c].dot} ${note.color === c ? "ring-2 ring-black/50" : ""}`} />
+              <Plus className="size-4" />
             </button>
-          ))}
-          <button
-            type="button"
-            aria-label="Notiz löschen"
-            onClick={() => void act("remove", { id: note.id })}
-            className="grid size-6 place-items-center rounded-sm hover:bg-black/10 hover:text-[#b4232f]"
-          >
-            <Trash2 className="size-4" />
-          </button>
+            <button
+              type="button"
+              aria-label={note.done ? "als offen markieren" : "als erledigt markieren"}
+              aria-pressed={note.done}
+              onClick={() => void act("update", { id: note.id, done: !note.done })}
+              className={`grid size-6 place-items-center rounded-sm hover:bg-black/10 ${note.done ? "text-[#1f7a3a]" : ""}`}
+            >
+              <Check className="size-4" />
+            </button>
+            {NOTE_COLORS.map(c => (
+              <button
+                key={c}
+                type="button"
+                aria-label={`Farbe ${PAPER[c].label}`}
+                aria-pressed={note.color === c}
+                onClick={() => note.color !== c && void act("update", { id: note.id, color: c })}
+                className="grid size-6 place-items-center rounded-sm hover:bg-black/10"
+              >
+                <span className={`size-3 rounded-full border border-black/30 ${PAPER[c].dot} ${note.color === c ? "ring-2 ring-black/50" : ""}`} />
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-label="Notiz löschen"
+              onClick={() => void act("remove", { id: note.id })}
+              className="grid size-6 place-items-center rounded-sm hover:bg-black/10 hover:text-[#b4232f]"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
         </div>
+        <textarea
+          ref={box}
+          aria-label="Notiz"
+          value={draft}
+          maxLength={MAX_TEXT}
+          rows={6}
+          placeholder="Notiz …"
+          spellCheck={false}
+          onFocus={() => {
+            focused.current = true;
+            onFront();
+          }}
+          onBlur={e => {
+            focused.current = false;
+            save(e.currentTarget.value);
+          }}
+          onChange={e => {
+            const text = e.target.value;
+            setDraft(text);
+            clearTimeout(textTimer.current);
+            textTimer.current = setTimeout(() => save(text), SAVE_DELAY_MS);
+          }}
+          onKeyDown={e => {
+            if (e.key === "Enter" && e.ctrlKey) save(e.currentTarget.value);
+          }}
+          className={`relative w-full resize-none bg-transparent px-3 pt-2 pb-3 text-[15px] leading-relaxed font-medium outline-none placeholder:text-black/35 ${note.done ? "line-through decoration-black/50" : ""}`}
+        />
+        {error && <p className="relative px-3 pb-2 text-xs text-[#b4232f]">{error}</p>}
       </div>
-      <textarea
-        ref={box}
-        aria-label="Notiz"
-        value={draft}
-        maxLength={MAX_TEXT}
-        rows={6}
-        placeholder="Notiz …"
-        spellCheck={false}
-        onFocus={() => {
-          focused.current = true;
-          onFront();
-        }}
-        onBlur={e => {
-          focused.current = false;
-          save(e.currentTarget.value);
-        }}
-        onChange={e => {
-          const text = e.target.value;
-          setDraft(text);
-          clearTimeout(textTimer.current);
-          textTimer.current = setTimeout(() => save(text), SAVE_DELAY_MS);
-        }}
-        onKeyDown={e => {
-          if (e.key === "Enter" && e.ctrlKey) save(e.currentTarget.value);
-        }}
-        className={`w-full resize-none bg-transparent px-3 pt-2 pb-3 text-[15px] leading-relaxed font-medium outline-none placeholder:text-black/35 ${note.done ? "line-through decoration-black/50" : ""}`}
-      />
-      {error && <p className="px-3 pb-2 text-xs text-[#b4232f]">{error}</p>}
-      {/* Folded corner */}
-      <span aria-hidden className="pointer-events-none absolute right-0 bottom-0 size-5 bg-[linear-gradient(135deg,transparent_50%,rgb(0_0_0/0.14)_50%)]" />
     </div>
   );
 }
@@ -341,17 +358,15 @@ export default function NotesWidget({ state }: WidgetProps<NotesData>) {
             )}
           </div>
         )}
-        {/* With no note left there is no "+" to click: a small pad to start from. */}
-        {!notes.length && (
-          <button
-            type="button"
-            aria-label="Neue Notiz"
-            onClick={() => addNote()}
-            className="relative grid size-14 rotate-[-4deg] place-items-center bg-[#ffe27a] text-[#2b2a26] shadow-[3px_3px_0_#f5d35c,6px_6px_0_#e9c54a,0_10px_20px_rgb(0_0_0/0.5)] transition-transform hover:rotate-0"
-          >
-            <Plus className="size-6" />
-          </button>
-        )}
+        {/* Always there: the "+" on a note only shows on hover, and with no note left there is none at all. */}
+        <button
+          type="button"
+          aria-label="Neue Notiz"
+          onClick={() => addNote()}
+          className="relative grid size-14 rotate-[-4deg] place-items-center bg-[#ffe27a] text-[#2b2a26] shadow-[3px_3px_0_#f5d35c,6px_6px_0_#e9c54a,0_10px_20px_rgb(0_0_0/0.5)] transition-transform hover:rotate-0"
+        >
+          <Plus className="size-6" />
+        </button>
       </div>
     </div>
   );

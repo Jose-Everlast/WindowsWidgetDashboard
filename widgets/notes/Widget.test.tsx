@@ -33,8 +33,8 @@ describe("NotesWidget", () => {
   it("renders notes as text, without a tile", () => {
     render(<NotesWidget state={state({ notes: [{ ...first, text: "<b>fett</b>" }] })} config={{}} />);
     expect((screen.getByLabelText("Notiz") as HTMLTextAreaElement).value).toBe("<b>fett</b>");
-    // The start pad only exists while there is no note.
-    expect(screen.queryByLabelText("Neue Notiz")).toBeNull();
+    // The pad stays visible with notes too: the "+" on a note only shows on hover.
+    expect(screen.getByLabelText("Neue Notiz")).toBeTruthy();
   });
 
   it("saves typed text on blur, and nothing when unchanged", async () => {
