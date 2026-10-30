@@ -126,9 +126,7 @@
       "type": "core",
       "x": 3,
       "y": 6,
-      "config": {
-        "label": "JARVIS"
-      }
+      "config": {}
     },
     {
       "instance": "nachrichten",

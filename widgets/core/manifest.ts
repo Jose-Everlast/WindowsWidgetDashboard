@@ -2,8 +2,8 @@ import { z } from "zod";
 import { defineManifest } from "@shared/widget-contract";
 
 export const CoreConfig = z.object({
-  /** Big label in the ring, e.g. a name for the machine. */
-  label: z.string().max(24).default("CORE"),
+  /** Optional label in the ring, e.g. a name for the machine; empty shows only the CPU load. */
+  label: z.string().max(24).default(""),
 });
 export type CoreConfig = z.infer<typeof CoreConfig>;
 

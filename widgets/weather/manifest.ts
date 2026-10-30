@@ -46,7 +46,8 @@ export const manifest = defineManifest({
   title: "Wetter",
   version: 1,
   category: "daily",
-  defaultSize: { w: 3, h: 3 },
+  // 4 rows: the forecast arc must fit without a scrollbar.
+  defaultSize: { w: 3, h: 4 },
   intervalMs: 600_000,
   capabilities: ["network"],
   // Floats on the wallpaper like the mockup: grid place, no frame.

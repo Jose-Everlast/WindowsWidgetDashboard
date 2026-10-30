@@ -10,12 +10,12 @@ Die Daten kommen alle 3 s aus den Node-`os`-APIs (gemessen ≈ 0,2 ms pro Aufruf
 ## Konfiguration
 
 ```json
-{ "instance": "core", "type": "core", "x": 3, "y": 6, "config": { "label": "JARVIS" } }
+{ "instance": "core", "type": "core", "x": 3, "y": 6, "config": {} }
 ```
 
 | Feld | Bedeutung |
 |---|---|
-| `label` | Name in der Ringmitte, höchstens 24 Zeichen (Standard `CORE`) |
+| `label` | optionaler Name in der Ringmitte, höchstens 24 Zeichen; ohne Angabe steht dort nur die CPU-Last |
 
 ## Leistung
 

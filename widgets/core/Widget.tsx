@@ -78,10 +78,13 @@ function Ring({ label, cpu, mem }: { label: string; cpu: number | null; mem: num
       <circle cx={C} cy={C} r={100} fill="url(#core-halo)" />
       <circle cx={C} cy={C} r={46} fill="url(#core-glow)" />
       <circle cx={C} cy={C} r={46} fill="none" strokeWidth={1} className="stroke-accent/40" />
-      <text x={C} y={C - 4} textAnchor="middle" className="fill-fg font-display text-[15px] tracking-[0.15em]">
-        {label}
-      </text>
-      <text x={C} y={C + 14} textAnchor="middle" className="fill-glow font-mono text-[11px]">
+      {label && (
+        <text x={C} y={C - 4} textAnchor="middle" className="fill-fg font-display text-[15px] tracking-[0.15em]">
+          {label}
+        </text>
+      )}
+      {/* Without a label the load sits in the middle of the ring. */}
+      <text x={C} y={label ? C + 14 : C + 5} textAnchor="middle" className={`fill-glow font-mono ${label ? "text-[11px]" : "text-[15px]"}`}>
         {cpu === null ? "--" : `${Math.round(cpu)}%`}
       </text>
     </svg>
@@ -100,7 +103,7 @@ function Readout({ label, value, tone }: { label: string; value: string; tone: s
 export default function CoreWidget({ state, config }: WidgetProps<CoreData>) {
   const { host, cpuPercent, memPercent, cores, uptimeS } = state.data;
   // config is the raw instance config; the server already validated it against CoreConfig.
-  const label = typeof config.label === "string" ? config.label : "CORE";
+  const label = typeof config.label === "string" ? config.label.trim() : "";
   const { time, date } = formatClock(useClock());
 
   return (
