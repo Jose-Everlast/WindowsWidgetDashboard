@@ -14,7 +14,10 @@ Running without Vite:
 
 ```bash
 npm run build && npm start    # UI + API: http://127.0.0.1:4700
+npm run status                # running? where? dev or prod?
 ```
+
+Only one dashboard runs at a time: a second start stops with a message saying where the first one runs. The running server is recorded in `data/server.json` and reported by `GET /api/health`.
 
 ## Configuration: `dashboard.config.json`
 
@@ -92,6 +95,7 @@ Then:
 | `npm run dev` | API (`tsx watch`, :4700) and Vite (:5174) |
 | `npm run build` | build the UI into `dist/web` |
 | `npm start` | server, serves the API and the built UI |
+| `npm run status` | is the dashboard running, on which port, in which mode (dev/prod), since when |
 | `npm test` | Vitest (unit and integration tests) |
 | `npm run lint` / `npm run typecheck` | ESLint / tsc |
 | `npm run check` | typecheck + lint + test + build |

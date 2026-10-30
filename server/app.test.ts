@@ -45,7 +45,7 @@ beforeEach(async () => {
     layout,
     types: [],
     openUrl: vi.fn(async () => {}),
-    startedAt: Date.now() - 5000,
+    server: { app: "windowsDashboard", pid: 123, port: 4700, mode: "prod", startedAt: new Date(Date.now() - 5000).toISOString(), version: "0.1.0" },
     settings: await createSettingsStore(join(distDir, "ui-settings.json")),
     // app.request("/x") has no Host header; the guard then uses the URL host "localhost".
     allowedHosts: ["localhost", "127.0.0.1:4700"],
@@ -59,10 +59,11 @@ const open = (body: unknown, headers: Record<string, string> = { "content-type":
   createApp(deps).request("/api/open", { method: "POST", headers, body: JSON.stringify(body) });
 
 describe("API", () => {
-  it("GET /api/health lists instances", async () => {
+  it("GET /api/health tells who runs and lists instances", async () => {
     const res = await createApp(deps).request("/api/health");
     const body = (await res.json()) as HealthResponse;
     expect(body.ok).toBe(true);
+    expect(body.server).toMatchObject({ app: "windowsDashboard", pid: 123, port: 4700, mode: "prod" });
     expect(body.uptimeS).toBeGreaterThanOrEqual(5);
     expect(body.instances).toEqual([{ instance: "system", type: "system", status: "ok", updatedAt: state.updatedAt }]);
   });

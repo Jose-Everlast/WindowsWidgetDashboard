@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { serve } from "@hono/node-server";
 import { gmailProfile } from "../widgets/mail/gmail";
@@ -8,7 +9,9 @@ import { createPendingStore } from "./auth/pending";
 import { tokenStoreFor } from "./auth/token-store";
 import { createCache } from "./cache";
 import { loadDashboardConfig } from "./config-file";
+import type { ServerInfo } from "@shared/api";
 import { assertLocalHost, config } from "./env";
+import { describeServer, findRunning, instanceFile, removeInstance, serverMode, writeInstance } from "./instance";
 import { log, logError } from "./log";
 import { createScheduler } from "./scheduler";
 import { createSettingsStore } from "./settings";
@@ -23,6 +26,23 @@ async function openUrl(href: string): Promise<void> {
 
 async function main() {
   assertLocalHost(config.host);
+
+  // One dashboard at a time: a second start says where the first one runs instead of "port in use".
+  const stateFile = instanceFile(config.dataDir);
+  const running = await findRunning({ file: stateFile, ports: [config.port] });
+  if (running) {
+    logError("server", `läuft bereits: ${describeServer(running)} – Status: npm run status`);
+    process.exit(1);
+  }
+  const { version } = JSON.parse(readFileSync(join(config.root, "package.json"), "utf8")) as { version: string };
+  const self: ServerInfo = {
+    app: "windowsDashboard",
+    pid: process.pid,
+    port: config.port,
+    mode: serverMode(process.env.npm_lifecycle_event),
+    startedAt: new Date().toISOString(),
+    version,
+  };
 
   const { config: dashboard } = loadDashboardConfig({
     configPath: config.dashboardConfigPath,
@@ -47,7 +67,7 @@ async function main() {
     layout: buildLayout(dashboard, types),
     types: buildTypes(types),
     openUrl,
-    startedAt: Date.now(),
+    server: self,
     allowedHosts: [...localHosts],
     allowedOrigins: localHosts.map(h => `http://${h}`),
     distDir: config.distDir,
@@ -70,11 +90,13 @@ async function main() {
   });
 
   const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, info => {
-    log("server", `listening on http://${config.host}:${info.port}`);
+    log("server", `listening on http://${config.host}:${info.port} (${self.mode}, PID ${self.pid})`);
+    writeInstance(stateFile, self).catch(err => logError("server", `server.json: ${err instanceof Error ? err.message : String(err)}`));
   });
+  process.on("exit", () => removeInstance(stateFile, self.pid));
   server.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {
-      logError("server", `Port ${config.port} belegt – PORT in .env ändern oder den Prozess beenden`);
+      logError("server", `Port ${config.port} ist von einem anderen Programm belegt – npm run status zeigt, welches; sonst PORT in .env ändern`);
     } else {
       logError("server", err.message);
     }

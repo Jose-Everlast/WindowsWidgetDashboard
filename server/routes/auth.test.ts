@@ -72,7 +72,7 @@ async function setup(over: Partial<AuthDeps> = {}, tokenBody?: string) {
     layout: { grid: { columns: 12, rows: 8, gapPx: 12, reserveLeftPx: 0, reserveTopPx: 0 }, widgets: [] },
     types: [],
     openUrl: vi.fn(async () => {}),
-    startedAt: Date.now(),
+    server: { app: "windowsDashboard", pid: 1, port: 4700, mode: "prod", startedAt: new Date().toISOString(), version: "0.1.0" },
     settings: await createSettingsStore(join(dir, "ui-settings.json")),
     allowedHosts: ["localhost", "127.0.0.1:4700", "localhost:4700"],
     allowedOrigins: ["http://127.0.0.1:4700"],

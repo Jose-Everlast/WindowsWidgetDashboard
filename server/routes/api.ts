@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import type { HealthResponse, LayoutResponse, TypesResponse } from "@shared/api";
+import type { HealthResponse, LayoutResponse, ServerInfo, TypesResponse } from "@shared/api";
 import type { Cache } from "../cache";
 import { notFound, parseJson } from "../http";
 import type { Scheduler } from "../scheduler";
@@ -15,7 +15,8 @@ export interface ApiDeps {
   types: TypesResponse;
   /** Receives the normalized href (new URL(..).href): quotes and spaces are percent-encoded. */
   openUrl: (url: string) => Promise<void>;
-  startedAt: number;
+  /** Who is running (pid, port, mode, start time, version). */
+  server: ServerInfo;
   settings: SettingsStore;
 }
 
@@ -25,7 +26,8 @@ export function apiRoutes(deps: ApiDeps): Hono {
   app.get("/health", c =>
     c.json<HealthResponse>({
       ok: true,
-      uptimeS: Math.round((Date.now() - deps.startedAt) / 1000),
+      server: deps.server,
+      uptimeS: Math.round((Date.now() - Date.parse(deps.server.startedAt)) / 1000),
       instances: deps.cache.all().map(s => ({ instance: s.instance, type: s.type, status: s.status, updatedAt: s.updatedAt })),
     }),
   );

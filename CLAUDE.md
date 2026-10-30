@@ -23,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev          # API (tsx watch, :4700) + Vite (:5174, proxies /api)
 npm run build        # UI → dist/web
 npm start            # server, serves API + built UI on 127.0.0.1:4700
+npm run status       # running? port, dev/prod, PID, since when (no WMI, ~2 s)
 npm test             # vitest run
 npx vitest run widgets/ports        # single folder or file
 npm run lint / npm run typecheck
@@ -38,7 +39,7 @@ Ports: 3000 = relaunch-radar API, 5173 = relaunch-radar Vite, 4700 = this server
 ## Architecture
 
 ```
-server/   index.ts (bootstrap) → app.ts (guard, routes, static) · scheduler.ts · cache.ts
+server/   index.ts (bootstrap, single-instance check) → app.ts (guard, routes, static) · scheduler.ts · cache.ts · instance.ts (data/server.json)
           widgets/loader.ts (discovers widgets/*/) · guard.ts · lib/win.ts · lib/sse.ts
 web/src/  hub/ (DashboardProvider: layout + SSE + watchdog; Hub grid; WidgetFrame + ErrorBoundary)
           views/ (generic WidgetView renderers) · lib/ (openUrl, time)

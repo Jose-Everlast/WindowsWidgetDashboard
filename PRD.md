@@ -387,7 +387,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `/api/health` | `{ ok: true, uptimeS, instances: [{ instance, type, status, updatedAt }] }` |
+| GET | `/api/health` | `{ ok: true, server: { app, pid, port, mode, startedAt, version }, uptimeS, instances: [{ instance, type, status, updatedAt }] }`; Grundlage für `npm run status` und die Sperre gegen einen zweiten Start |
 | POST | `/api/open` | Body `{ url }` (nur http/https); öffnet die normalisierte URL im Standardbrowser, `204` |
 | GET | `/api/types` | alle gefundenen Widget-Manifeste (ohne zod, als JSON-Schema) |
 | GET | `/api/layout` | Inhalt von `dashboard.config.json` (Instanzen und Grid) |

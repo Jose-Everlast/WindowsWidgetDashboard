@@ -38,8 +38,24 @@ export interface UiSettings {
   gameOfLife: boolean;
 }
 
+/** Marks a /api/health answer as ours, so `npm run status` and the start check ignore other servers. */
+export const SERVER_APP_ID = "windowsDashboard";
+export type ServerMode = "dev" | "prod" | "unknown";
+
+/** Who is running: in /api/health and in data/server.json. */
+export interface ServerInfo {
+  app: typeof SERVER_APP_ID;
+  pid: number;
+  port: number;
+  mode: ServerMode;
+  /** ISO time */
+  startedAt: string;
+  version: string;
+}
+
 export interface HealthResponse {
   ok: true;
+  server: ServerInfo;
   uptimeS: number;
   instances: Array<{ instance: string; type: string; status: WidgetStatus; updatedAt: string | null }>;
 }

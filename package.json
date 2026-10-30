@@ -16,7 +16,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "new-widget": "tsx scripts/new-widget.ts"
+    "new-widget": "tsx scripts/new-widget.ts",
+    "status": "tsx scripts/status.ts"
   },
   "dependencies": {
     "@bybas/weather-icons": "2.0.0",
