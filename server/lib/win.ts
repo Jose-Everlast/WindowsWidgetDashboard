@@ -52,14 +52,29 @@ export function parseNetstatListeners(text: string): Listener[] {
   return result;
 }
 
-/** PID → image name from `tasklist /fo csv /nh`. The localized memory column is ignored. */
-export function parseTasklist(text: string): Map<number, string> {
-  const map = new Map<number, string>();
+export interface ProcessRow {
+  pid: number;
+  name: string;
+  /** "Console" for the desktop session, "Services" for session 0 (not localized). */
+  session: string;
+}
+
+/**
+ * Rows of `tasklist /fo csv /nh`. The localized memory column is ignored, and so is the "INFORMATION: …"
+ * line tasklist prints when a /fi filter matches nothing.
+ */
+export function parseTasklistRows(text: string): ProcessRow[] {
+  const rows: ProcessRow[] = [];
   for (const line of text.split(/\r?\n/)) {
-    const m = /^"([^"]+)","(\d+)"/.exec(line.trim());
-    if (m) map.set(Number(m[2]), m[1]!);
+    const m = /^"([^"]+)","(\d+)","([^"]*)"/.exec(line.trim());
+    if (m) rows.push({ pid: Number(m[2]), name: m[1]!, session: m[3]! });
   }
-  return map;
+  return rows;
+}
+
+/** PID → image name. */
+export function parseTasklist(text: string): Map<number, string> {
+  return new Map(parseTasklistRows(text).map(r => [r.pid, r.name]));
 }
 
 export async function listListeners(signal?: AbortSignal): Promise<Listener[]> {
@@ -99,4 +114,27 @@ export function sharedCall<T>(load: () => Promise<T>, ttlMs: number, now: () => 
 }
 
 // Ports and agents both need tasklist in the same 10 s rhythm: share one call (run() has its own timeout).
-export const listProcesses = sharedCall(() => run("tasklist", ["/fo", "csv", "/nh"]).then(parseTasklist), 5_000);
+export const listProcessRows = sharedCall(() => run("tasklist", ["/fo", "csv", "/nh"]).then(parseTasklistRows), 5_000);
+
+export const listProcesses = (signal?: AbortSignal): Promise<Map<number, string>> =>
+  listProcessRows(signal).then(rows => new Map(rows.map(r => [r.pid, r.name])));
+
+function assertPid(pid: number): void {
+  if (!Number.isInteger(pid) || pid <= 0) throw new Error(`Ungültige PID ${pid}`);
+}
+
+/** One process, fresh (no shared cache): right before acting on a PID it must be current. */
+export async function processRow(pid: number, signal?: AbortSignal): Promise<ProcessRow | null> {
+  assertPid(pid);
+  const rows = parseTasklistRows(await run("tasklist", ["/fo", "csv", "/nh", "/fi", `PID eq ${pid}`], { signal }));
+  return rows.find(r => r.pid === pid) ?? null;
+}
+
+/**
+ * Ends one process. Deliberately without /T: the tree of e.g. Code.exe holds the terminals running this
+ * dashboard and coding agents, and checking the tree would need WMI (39 s+ on this machine).
+ */
+export async function killProcess(pid: number, signal?: AbortSignal): Promise<void> {
+  assertPid(pid);
+  await run("taskkill", ["/PID", String(pid), "/F"], { signal });
+}

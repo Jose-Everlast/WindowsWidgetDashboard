@@ -22,7 +22,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 **Mission:** Ein Blick auf den Desktop ersetzt das tägliche Durchklicken durch ein Dutzend Apps und Terminals.
 
 **Kernprinzipien:**
-1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version. Ausgenommen sind eigene Daten des Dashboards wie Notizen (Post-its) oder der gesammelte Messenger-Verlauf mit seinem Gelesen-Stand; fremde Dienste bleiben unberührt.
+1. **Nur lesen, nichts verändern.** Das Dashboard zeigt an und verlinkt. Es versendet nichts, löscht nichts und markiert nichts als gelesen in der MVP Version. Ausgenommen sind eigene Daten des Dashboards wie Notizen (Post-its) oder der gesammelte Messenger-Verlauf mit seinem Gelesen-Stand; fremde Dienste bleiben unberührt. Einzige Ausnahme nach außen: Im Ports-Widget kann der Nutzer einen lauschenden Prozess mit zwei Klicks beenden. Das Dashboard tut das nie von sich aus.
 2. **Echte Daten oder ein sichtbarer Fehler.** Es gibt keine Mocks und keine stillen Fallbacks. Fehlt eine Konfiguration, zeigt das Widget genau das an.
 3. **Lokal und privat.** Alles läuft auf `127.0.0.1`. Tokens und Daten verlassen den Rechner nur bei den direkten API-Aufrufen an die jeweiligen Dienste. An die KI (Anthropic über die Claude-CLI, OpenAI für den Chat) geht nur ein kompakter Daten-Snapshot, also Betreffzeilen, Absender, Zähler und Status, keine vollständigen Mail-Texte. Dieser Kontext lässt sich abschalten.
 4. **Ein Widget ist ein Modul.** Jedes Widget ist ein Ordner unter `widgets/`, der den Widget-Vertrag erfüllt (siehe 6.1). Ein neues Widget heißt: Ordner anlegen und in die Konfiguration eintragen. Am Kern ändert sich nichts.
@@ -50,7 +50,7 @@ Technisch ist es eine **lokale Web-App**. Ein Node-Server (Hono) sammelt alle Da
 - ✅ Wetter-Widget: aktuelle Werte plus Vorschau für die nächsten Stunden und Tage
 - ✅ News-Widget aus konfigurierbaren RSS-Feeds
 - ✅ System-Widget: CPU, RAM, Datenträger
-- ✅ Ports-Widget: lauschende TCP-Ports → PID → Prozessname → Kommandozeile bzw. Projektordner
+- ✅ Ports-Widget: lauschende TCP-Ports → PID → Prozessname → Kommandozeile bzw. Projektordner, mit Stopp-Knopf pro Port (Zwei-Klick, serverseitig nachgeprüft; System, Dienste und das Dashboard selbst sind geschützt)
 - ✅ Claude-Agents-Widget: laufende `claude`- und `codex`-Prozesse mit Projekt und letzter Aktivität
 - ✅ relaunch-radar-Widget: Autopilot-Status, laufende Jobs, letzte Benachrichtigungen, live per SSE
 - ✅ Mail-Widget: eine gemeinsame Inbox für Gmail, Outlook und IMAP mit Ungelesen-Zählern pro Konto
@@ -392,7 +392,7 @@ Alle Endpunkte liegen auf `http://127.0.0.1:4700`. Es gibt keine Authentifizieru
 | GET | `/api/types` | alle gefundenen Widget-Manifeste (ohne zod, als JSON-Schema) |
 | GET | `/api/layout` | Inhalt von `dashboard.config.json` (Instanzen und Grid) |
 | GET | `/api/widgets` | `WidgetState[]` aller Instanzen (Initial-Load der UI) |
-| POST | `/api/widgets/:instance/actions/:action` | führt eine im Collector deklarierte Aktion aus (`refresh` ist eingebaut, z. B. `add`/`update`/`remove` bei Notizen); der JSON-Body ist die Eingabe; Antwort ist der neue `WidgetState`, `400` bei ungültiger Eingabe, `404` bei unbekannter Aktion |
+| POST | `/api/widgets/:instance/actions/:action` | führt eine im Collector deklarierte Aktion aus (`refresh` ist eingebaut, z. B. `add`/`update`/`remove` bei Notizen, `stop` bei Ports); der JSON-Body ist die Eingabe; Antwort ist der neue `WidgetState`, `400` bei ungültiger Eingabe, `404` bei unbekannter Aktion |
 | GET | `/api/widgets/:instance` | `WidgetState` einer Instanz; Standard-Instanzen tragen den Typnamen als ID (`weather`, `news`, `system`, `ports`, `agents`, `relaunch-radar`, `mail`, `messages`, `ai-usage`, `briefing`) |
 | POST | `/api/briefing/run` | startet einen Briefing-Lauf; `202`, oder `429` bei laufendem bzw. zu frühem Lauf. Das Ergebnis kommt über `/api/stream` |
 | POST | `/api/chat` | Body `{ message, useContext }`; Antwort ist ein SSE-Stream aus `delta`-Events, am Ende `done` |
@@ -553,6 +553,7 @@ Das Verbrauchs-Widget hängt nicht von Mail und Messenger ab. Es kann schon nach
 | Format der Session-Logs von Claude und Codex ist nicht offiziell dokumentiert und kann sich ändern | Verbrauchsanzeige falsch oder leer | Defensive zod-Parser, unbekannte Zeilen überspringen; Fixture-Tests mit echten Zeilen; bei Parse-Fehlern `error` statt falscher Zahlen |
 | KI erfindet Inhalte im Briefing oder Chat | Falsche Prioritäten | Prompt verlangt ausschließlich Fakten aus dem Snapshot mit Quellenangabe; Briefing zeigt die Snapshot-Zeit; keine KI-Aktionen mit Wirkung |
 | Kosten und Kontingent durch KI-Aufrufe | Unerwartete OpenAI-Kosten, weniger Claude-Kontingent für die eigentliche Arbeit | Briefing max. 1× automatisch pro Tag plus gedrosselte manuelle Läufe; Chat nur auf Anfrage; Kosten sichtbar im Verbrauchs-Widget |
+| Versehentliches Beenden eines Prozesses über den Stopp-Knopf im Ports-Widget | Laufende Arbeit (Server, Editor) geht verloren | Zwei-Klick ohne Browser-Dialog; frische Nachprüfung von Port, PID und Name vor dem Beenden (sonst `409`); System, Windows-Dienste und das Dashboard selbst geschützt (`403`); `taskkill /F` ohne `/T`, damit keine Kindprozesse (Terminals, Agents) mitsterben; `allowStop: false` schaltet es ab |
 | Lively startet nicht oder lädt die Seite bei Server-Neustarts nicht neu | Leerer Hintergrund | UI reconnectet selbst (SSE plus Retry); Autostart von Server und Lively in Phase 6 testen; die UI funktioniert auch im Browser als Ausweg |
 
 ## 15. Anhang

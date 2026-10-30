@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**windowsDashboard** is a personal dashboard for one Windows 11 machine. It is shown as an interactive desktop wallpaper through [Lively Wallpaper](https://www.rocksdanister.com/lively/). A local Node server collects data from widgets (weather, news, system, ports, Claude/Codex agents, relaunch-radar, …) and serves a React UI on `http://127.0.0.1:4700`. It reads data only. It never sends mail or messages and never changes foreign tools. `PRD.md` is the north star; phases 1–5 of 7 are implemented (phase 5 still needs a check against real messenger toasts).
+**windowsDashboard** is a personal dashboard for one Windows 11 machine. It is shown as an interactive desktop wallpaper through [Lively Wallpaper](https://www.rocksdanister.com/lively/). A local Node server collects data from widgets (weather, news, system, ports, Claude/Codex agents, relaunch-radar, …) and serves a React UI on `http://127.0.0.1:4700`. It reads data only (the one exception: the user's two-click stop button in the ports tile). It never sends mail or messages and never changes foreign tools. `PRD.md` is the north star; phases 1–5 of 7 are implemented (phase 5 still needs a check against real messenger toasts).
 
 ## Tech Stack
 
@@ -77,7 +77,7 @@ dashboard.config.json   instances + grid (gitignored; dashboard.config.example.j
   - Every request passes `localGuard` (Host check; state-changing `/api` calls need JSON + an allowed Origin).
   - Foreign URLs go out only as a normalized href via `rundll32` (`POST /api/open`).
   - Render foreign data as text only.
-- **Hands off foreign tools:** never trigger jobs in relaunch-radar or stop its server without asking the user first.
+- **Hands off foreign tools:** never trigger jobs in relaunch-radar. Processes are stopped only by the user's own two-click in the ports tile; an agent never calls the `stop` action or kills processes without asking the user first.
 - **Secrets only in `.env`** (`.env.example` stays complete). Non-secret widget settings belong in `dashboard.config.json`.
 
 ## Workflow

@@ -11,13 +11,24 @@ Datenquelle sind `netstat -ano` und `tasklist /fo csv /nh`, zusammen etwa 1,5 s.
   "config": {
     "minPort": 1024,
     "excludeProcesses": ["svchost.exe", "lsass.exe", "wininit.exe", "services.exe", "spoolsv.exe", "System"],
-    "labels": { "3000": "relaunch-radar API", "4700": "Dashboard" }
+    "labels": { "3000": "relaunch-radar API", "4700": "Dashboard" },
+    "allowStop": true
   } }
 ```
 
 - Alle Felder sind optional.
+- `allowStop: false` blendet die Stopp-Knöpfe aus, und der Server lehnt die Aktion ab.
 - `labels` ordnet Ports einem Projekt zu. Automatisch geht das nicht, denn die Kommandozeile eines Prozesses gibt es nur über WMI.
 - Abgefragt wird alle 10 s.
+
+## Prozess stoppen
+
+Fährst du mit der Maus über eine Zeile, erscheint rechts ein Stopp-Knopf. Der erste Klick macht daraus „Stoppen?“ (4 s lang), erst der zweite beendet den Prozess. Praktisch für Server, deren Terminal längst zu ist.
+
+- Der Server prüft vorher frisch nach, ob die PID noch auf dem Port lauscht und denselben Namen hat. Sonst meldet die Kachel z. B. „Port 3000 gehört nicht mehr zu PID 18708“, und nichts wird beendet.
+- Keinen Knopf haben: Systemprozesse (PID ≤ 4, `svchost.exe`, `csrss.exe`, `explorer.exe` …), Windows-Dienste (Sitzung `Services`), Prozesse ohne bekannten Namen und das Dashboard selbst.
+- Beendet wird mit `taskkill /PID <pid> /F`, bewusst **ohne** `/T`: Sonst würden alle Kindprozesse mitsterben, bei `Code.exe` z. B. die Terminals samt Dashboard und Agents. Bei `npm start` lauscht der letzte Prozess der Kette (`node`), `tsx` und `npm` beenden sich danach von selbst.
+- Prozesse mit Adminrechten lassen sich ohne Adminrechte nicht beenden; die Kachel zeigt das an.
 
 ## Fixtures
 

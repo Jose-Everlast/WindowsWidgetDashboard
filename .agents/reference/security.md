@@ -19,7 +19,13 @@ Gilt für alles unter `server/` und für jeden Widget-Collector. Das Dashboard l
    - Tokens liegen nur in `data/tokens/<konto>.json`: atomar geschrieben, Konto-ID als kebab-case geprüft (kein Path Traversal), nie geloggt, nie über `/api` ausgeliefert. Fehlermeldungen enthalten keine Request-Parameter.
    - Es gibt nur Lese-Scopes. IMAP öffnet ausschließlich per `EXAMINE` und holt nie `BODY[]`; `widgets/mail/collector.test.ts` prüft das.
    - Microsoft: beim Token-Request keinen `Origin`-Header senden (sonst gilt er als SPA-Request, mit 24-h-Tokens). Den rotierten Refresh-Token immer persistieren.
+8. **Prozesse beenden** (nur die Aktion `stop` in `widgets/ports`, Kern `widgets/ports/stop.ts`):
+   - Die Eingabe `{ pid, port, process }` wird strikt geprüft (`StopIn`). Unmittelbar vor dem Beenden wird frisch nachgeprüft (`netstat` + `tasklist /fi "PID eq n"`, ohne Cache): Lauscht die PID nicht mehr auf dem Port oder hat sie einen anderen Namen, gibt es `409` und kein Kill.
+   - Geschützt (`403`, in der UI kein Knopf): PID ≤ 4, Systemnamen (`stopBlocker` in `widgets/ports/parse.ts`, eine Regel für Payload und Aktion), Sitzung `Services`, das Dashboard selbst (eigene PID und eigener Port), `allowStop: false`.
+   - Beendet wird nur mit `taskkill /PID n /F` über `execFile` ohne Shell. Kein `/T`: Der Baum von z. B. `Code.exe` enthält die Terminals mit dem Dashboard und mit Coding-Agents, und den Baum zu prüfen ginge nur über WMI.
+   - Die UI bestätigt zweistufig in der Kachel, nie mit `window.confirm` (blockiert Lively).
+   - Ein Agent ruft die Aktion nie ohne Rückfrage auf (CLAUDE.md, Hard Rules).
 
 ## Tests
 
-Aktions-Eingaben (`POST /api/widgets/:instance/actions/:action`) sind Browser-Input: jede Aktion prüft ihre Eingabe strikt und hat einen Test für 400 bei ungültiger Eingabe. Aktionsnamen werden mit `Object.hasOwn` nachgeschlagen, damit `constructor` o. ä. nicht auf Prototyp-Funktionen zeigt. Die OAuth-Routen haben eigene Tests in `server/routes/auth.test.ts` (state single use, Provider-Mismatch, Text-Antworten, Host-Guard, kein SPA-Fallback). Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).
+Aktions-Eingaben (`POST /api/widgets/:instance/actions/:action`) sind Browser-Input: jede Aktion prüft ihre Eingabe strikt und hat einen Test für 400 bei ungültiger Eingabe. Aktionsnamen werden mit `Object.hasOwn` nachgeschlagen, damit `constructor` o. ä. nicht auf Prototyp-Funktionen zeigt. Die Aktion `ports/stop` testet jede Ablehnung zusammen mit „kein Kill“ (`widgets/ports/stop.test.ts`). Die OAuth-Routen haben eigene Tests in `server/routes/auth.test.ts` (state single use, Provider-Mismatch, Text-Antworten, Host-Guard, kein SPA-Fallback). Jede neue ändernde Route bekommt in `server/app.test.ts` zwei Tests: einen für fremden Host bzw. fremde Origin (403) und einen für fehlenden JSON-Content-Type (415).

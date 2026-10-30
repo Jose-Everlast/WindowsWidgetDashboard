@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import { parseNetstatListeners, parseTasklist, sharedCall } from "./win";
+import { parseNetstatListeners, parseTasklist, parseTasklistRows, sharedCall } from "./win";
 
 // Real output from the target machine (German Windows 11), LAN IPs replaced by 192.0.2.x.
 const netstat = readFileSync(new URL("./fixtures/netstat.txt", import.meta.url), "latin1");
@@ -45,6 +45,19 @@ describe("parseTasklist", () => {
     expect(map.get(4)).toBe("System");
     expect([...map.values()]).toContain("claude.exe");
     expect(parseTasklist('Kaputt\n"x.exe","12","Console","1","1.024 K"')).toEqual(new Map([[12, "x.exe"]]));
+  });
+});
+
+describe("parseTasklistRows", () => {
+  it("reads the session, so Windows services can be told apart from desktop programs", () => {
+    const rows = parseTasklistRows(tasklist);
+    expect(rows.find(r => r.pid === 4)).toEqual({ pid: 4, name: "System", session: "Services" });
+    expect(rows.some(r => r.session === "Console")).toBe(true);
+  });
+
+  it("returns nothing for the INFORMATION line of a /fi filter without match", () => {
+    // Real output on the target machine (German Windows 11).
+    expect(parseTasklistRows("INFORMATION: Es werden keine Aufgaben mit den angegebenen Kriterien ausgeführt.\r\n")).toEqual([]);
   });
 });
 
