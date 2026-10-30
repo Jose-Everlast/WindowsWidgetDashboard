@@ -1,0 +1,65 @@
+{
+  "topics": [
+    {
+      "name": "test",
+      "removable": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "000000000005",
+      "at": "2026-10-28T03:29:34.000Z",
+      "topic": "test",
+      "title": "…",
+      "text": "…",
+      "priority": 4,
+      "tags": [
+        "video_game"
+      ],
+      "click": "https://example.com/"
+    },
+    {
+      "id": "000000000004",
+      "at": "2026-10-28T02:05:57.000Z",
+      "topic": "test",
+      "title": "…",
+      "text": "…",
+      "priority": 5,
+      "tags": [],
+      "click": null
+    },
+    {
+      "id": "000000000003",
+      "at": "2026-10-27T20:34:43.000Z",
+      "topic": "test",
+      "title": "…",
+      "text": "…",
+      "priority": 3,
+      "tags": [],
+      "click": "https://example.com/"
+    },
+    {
+      "id": "000000000002",
+      "at": "2026-10-27T20:10:38.000Z",
+      "topic": "test",
+      "title": "…",
+      "text": "…",
+      "priority": 4,
+      "tags": [
+        "video_game"
+      ],
+      "click": null
+    },
+    {
+      "id": "000000000001",
+      "at": "2026-10-27T20:00:02.000Z",
+      "topic": "test",
+      "title": null,
+      "text": "…",
+      "priority": 3,
+      "tags": [],
+      "click": null
+    }
+  ],
+  "hidden": 0
+}
