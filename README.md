@@ -1,102 +1,105 @@
 # windowsDashboard
 
-Ein persönliches Dashboard für Windows 11, das als interaktiver Desktop-Hintergrund läuft. Ein lokaler Node-Server (Hono) sammelt die Daten, eine React-Oberfläche zeigt sie als Kachel-Grid an, und [Lively Wallpaper](https://www.rocksdanister.com/lively/) legt diese Oberfläche auf den Desktop. Ziele und Ausbaustufen beschreibt [PRD.md](PRD.md).
+A personal dashboard for Windows 11 that runs as an interactive desktop wallpaper. A local Node server (Hono) collects the data, a React UI shows it as a tile grid, and [Lively Wallpaper](https://www.rocksdanister.com/lively/) puts that UI on the desktop. Goals and roadmap are in [PRD.md](PRD.md) (German).
 
 ## Setup
 
 ```bash
 npm install
 cp .env.example .env
-npm run dev        # UI: http://127.0.0.1:5174 (Proxy auf die API unter :4700)
+npm run dev        # UI: http://127.0.0.1:5174 (proxies the API on :4700)
 ```
 
-Betrieb ohne Vite:
+Running without Vite:
 
 ```bash
 npm run build && npm start    # UI + API: http://127.0.0.1:4700
 ```
 
-## Konfiguration: `dashboard.config.json`
+## Configuration: `dashboard.config.json`
 
-Diese Datei legt fest, welche Widgets wo und mit welchen Einstellungen erscheinen. Fehlt sie beim Start, erzeugt der Server sie aus `dashboard.config.example.json`. Sie ist gitignored, weil sie z. B. deinen Standort enthält.
+This file defines which widgets appear where and with which settings. If it is missing at startup, the server creates it from `dashboard.config.example.json`. It is gitignored because it contains personal values such as your location.
 
 - **`grid`:**
-  - `columns`, `rows`: Größe des Rasters, Standard 12 × 8
-  - `gapPx`: Abstand zwischen den Kacheln
-  - `reserveLeftPx`, `reserveTopPx`: freier Rand für Desktop-Icons
-- **`widgets[]`:** eine Instanz pro Kachel
-  - `instance`: eindeutige ID in kebab-case
-  - `type`: Ordnername unter `widgets/`
-  - `x`, `y`: Position im Raster, ab 0
-  - `w`, `h`: Größe; ohne Angabe gilt die Standardgröße des Widgets
+  - `columns`, `rows`: grid size, default 12 × 8
+  - `gapPx`: gap between tiles
+  - `reserveLeftPx`, `reserveTopPx`: free margin for desktop icons
+- **`widgets[]`:** one instance per tile
+  - `instance`: unique ID in kebab-case
+  - `type`: folder name under `widgets/`
+  - `x`, `y`: position in the grid, starting at 0
+  - `w`, `h`: size; defaults to the widget's standard size
   - `title`, `intervalMs`, `enabled`: optional
-  - `config`: Einstellungen, die das jeweilige Widget prüft
+  - `config`: settings validated by the widget itself
 
-Ein Widget-Typ lässt sich mehrfach einbinden, z. B. Wetter für zwei Orte. Ist eine Instanz falsch konfiguriert, zeigt nur diese Kachel einen Fehler.
+A widget type can be used several times, e.g. weather for two places. If one instance is misconfigured, only that tile shows an error.
 
-## Lively einrichten
+## Setting up Lively
 
-1. Lively Wallpaper aus dem Microsoft Store installieren.
-2. Den Dashboard-Server starten (`npm start`).
-3. In Lively ein neues Wallpaper hinzufügen („+“ bzw. *Add Wallpaper*), die URL `http://127.0.0.1:4700` eingeben und das Wallpaper anwenden.
-4. In den Lively-Einstellungen unter *Wallpaper* die Eingabe auf **Maus** stellen, damit Klicks im Dashboard ankommen.
-5. In den Lively-Einstellungen den Start mit Windows aktivieren.
+1. Install Lively Wallpaper from the Microsoft Store.
+2. Start the dashboard server (`npm start`).
+3. In Lively, add a new wallpaper ("+" / *Add Wallpaper*), enter the URL `http://127.0.0.1:4700` and apply it.
+4. In Lively's settings under *Wallpaper*, set input to **Mouse** so clicks reach the dashboard.
+5. In Lively's settings, enable starting with Windows.
 
-Die Menübezeichnungen können je nach Lively-Version leicht abweichen. Maßgeblich ist das [Lively-Wiki](https://github.com/rocksdanister/lively/wiki).
+Menu names may differ slightly between Lively versions; the [Lively wiki](https://github.com/rocksdanister/lively/wiki) is authoritative.
 
-Links (z. B. News) öffnen sich im Standardbrowser, nicht im Hintergrund selbst. Den automatischen Start des Servers beim Login bringt Phase 7 (`scripts/install-autostart.ps1`).
+Links (e.g. news) open in the default browser, not in the wallpaper itself. Starting the server automatically at login is planned for phase 7 (`scripts/install-autostart.ps1`).
 
 ## Widgets
 
-| Typ | Zeigt | Quelle |
+| Type | Shows | Source |
 |---|---|---|
-| `weather` | aktuelles Wetter, 12 h, 3 Tage | Open-Meteo |
-| `news` | Schlagzeilen mehrerer Feeds als Laufband (hält beim Darüberfahren an) | RSS/Atom |
-| `system` | CPU, RAM, Laufwerke, Uptime | systeminformation, Node `os` |
-| `ports` | wer welchen TCP-Port belegt | `netstat -ano`, `tasklist` |
-| `agents` | Claude-/Codex-Sessions je Projekt, aktiv/inaktiv | Session-Logs, `tasklist` |
-| `relaunch-radar` | Autopilot, laufende Jobs, „wartet auf dich“, letzte Ereignisse (live per SSE) | relaunch-radar-API, Fallback `logs/notifications.json` |
-| `mail` | gemeinsame Inbox: Ungelesen-Zähler je Konto, letzte Mails aller Konten ([Einrichtung](widgets/mail/README.md)) | Gmail-API, Microsoft Graph, IMAP |
-| `core` | HUD-Kern: Uhr, drehende Ringe mit CPU-/RAM-Bögen, Uptime | Node `os` |
-| `messenger` | Chats von WhatsApp, Teams, Discord, Slack und Lark plus Outlook-Benachrichtigungen, gesammelt pro Chat bzw. Absender mit Ungelesen-Zählern; bleiben auch nach dem Wegklicken im Info-Center ([Details](widgets/messenger/README.md)) | Windows-Benachrichtigungsdatenbank (nur lesend), `data/messages/<instanz>.json` |
-| `notes` | Post-its: direkt in der Kachel tippen, einfärben, abhaken | `data/notes/<instanz>.json` |
-| `external` | beliebige WidgetView-JSONs anderer Projekte | HTTP oder Datei |
+| `weather` | current weather, next 12 h, 3 days | Open-Meteo |
+| `news` | headlines from several feeds as a ticker (pauses on hover) | RSS/Atom |
+| `system` | CPU, RAM, drives, uptime | systeminformation, Node `os` |
+| `ports` | which process listens on which TCP port, with a two-click stop button per port | `netstat -ano`, `tasklist` |
+| `agents` | Claude/Codex sessions per project, active/idle | session logs, `tasklist` |
+| `relaunch-radar` | autopilot, running jobs, "waiting for you", latest events (live via SSE) | relaunch-radar API, fallback `logs/notifications.json` |
+| `mail` | unified inbox: unread count per account, latest mails of all accounts ([setup](widgets/mail/README.md)) | Gmail API, Microsoft Graph, IMAP |
+| `core` | HUD core: clock, rotating rings with CPU/RAM arcs, uptime | Node `os` |
+| `messenger` | chats from WhatsApp, Teams, Discord, Slack and Lark plus Outlook notifications, grouped per chat or sender with unread counts; they stay after being dismissed in the notification center ([details](widgets/messenger/README.md)) | Windows notification database (read-only), `data/messages/<instance>.json` |
+| `ntfy` | latest messages of your [ntfy](https://ntfy.sh) topics, live via SSE; add/remove topics and dismiss messages right in the tile ([details](widgets/ntfy/README.md)) | ntfy JSON/SSE API, `data/ntfy/<instance>.json` |
+| `notes` | sticky notes: type directly in the tile, change color, check off | `data/notes/<instance>.json` |
+| `external` | any WidgetView JSON from other projects | HTTP or file |
 
-Details und Konfiguration stehen in der README des jeweiligen Ordners unter `widgets/<typ>/`.
+Details and configuration are in each folder's README under `widgets/<type>/` (German).
 
-**Layout:** `x` und `w` legen Spalte und Breite fest, `y` die Reihenfolge innerhalb der Spalte. Jede Kachel ist so hoch wie ihr Inhalt und schließt direkt an die Kachel darüber an; `h` ist die maximale Höhe in Rasterzeilen, darüber wird in der Kachel gescrollt.
+**Layout:** `x` and `w` set column and width, `y` the order within the column. Each tile is as tall as its content and sits directly below the tile above it; `h` is the maximum height in grid rows, beyond that the tile scrolls.
 
-**Darstellung:** Das Zahnrad oben rechts öffnet die Einstellungen: Kachel-Hintergrund und Kachel-Rahmen lassen sich für alle Widgets abschalten. Die Einstellung liegt auf dem Server (`data/ui-settings.json`) und gilt sofort für alle Ansichten, also auch für Lively.
+**Appearance:** The gear icon at the top right opens the settings: tile background and tile border can be turned off for all widgets. The setting is stored on the server (`data/ui-settings.json`) and applies immediately to every view, including Lively.
 
-## Eigene Widgets
+## Custom widgets
 
 ```bash
-npm run new-widget git-status --view status   # generische Darstellung, ohne eigene Oberfläche
-npm run new-widget mein-widget                # mit eigener Widget.tsx
+npm run new-widget git-status --view status   # generic rendering, no custom UI
+npm run new-widget my-widget                  # with its own Widget.tsx
 ```
 
-Danach:
-1. In `widgets/<id>/collector.ts` die Funktion `collect()` implementieren.
-2. In `fixtures/<id>.json` eine echte Beispiel-Payload ablegen.
-3. Die Instanz in `dashboard.config.json` eintragen und den Server neu starten.
+Then:
+1. Implement `collect()` in `widgets/<id>/collector.ts`.
+2. Put a real sample payload in `fixtures/<id>.json`.
+3. Add the instance to `dashboard.config.json` and restart the server.
 
-Ob das Widget den Vertrag erfüllt, prüft `widgets/contract.test.ts`. Den Vertrag selbst beschreibt `shared/widget-contract.ts`.
+`widgets/contract.test.ts` checks that the widget fulfils the contract; the contract itself is `shared/widget-contract.ts`.
 
-**Ohne Code:** Jedes lokale Projekt kann ein WidgetView-JSON per HTTP oder als Datei bereitstellen und wird über das Widget `external` eingebunden, siehe [widgets/external/README.md](widgets/external/README.md).
+**Without code:** Any local project can provide a WidgetView JSON over HTTP or as a file and be included via the `external` widget, see [widgets/external/README.md](widgets/external/README.md).
 
 ## Scripts
 
-| Script | Zweck |
+| Script | Purpose |
 |---|---|
-| `npm run dev` | API (`tsx watch`, :4700) und Vite (:5174) |
-| `npm run build` | UI nach `dist/web` bauen |
-| `npm start` | Server, liefert API und gebaute UI aus |
-| `npm test` | Vitest (Unit- und Integrationstests) |
+| `npm run dev` | API (`tsx watch`, :4700) and Vite (:5174) |
+| `npm run build` | build the UI into `dist/web` |
+| `npm start` | server, serves the API and the built UI |
+| `npm test` | Vitest (unit and integration tests) |
 | `npm run lint` / `npm run typecheck` | ESLint / tsc |
 | `npm run check` | typecheck + lint + test + build |
-| `npm run new-widget <id>` | neues Widget anlegen |
+| `npm run new-widget <id>` | scaffold a new widget |
 
 ---
+
+> This project was built with the agentic coding workflow below. The rest of this README comes from the boilerplate it started from.
 
 ## Agentic Coding Workflow (Boilerplate)
 

@@ -66,7 +66,7 @@ dashboard.config.json   instances + grid (gitignored; dashboard.config.example.j
   - Routes throw `HttpError` (`server/http.ts`); `app.onError` maps it to JSON.
   - Collector errors never reach HTTP; the scheduler turns them into widget status.
   - Logging is `log(scope, …)` / `logError(scope, …)` from `server/log.ts`, scope e.g. `widget:ports/ports`. Repeated failures are logged only on a status change.
-- **Domain wording:** code comments are in English; UI texts, READMEs, PRD and plans are in German.
+- **Domain wording:** code comments and the root `README.md` (public repo) are in English; UI texts, widget READMEs, PRD and plans are in German.
 
 ## Hard Rules
 
