@@ -559,7 +559,7 @@ Das Verbrauchs-Widget hängt nicht von Mail und Messenger ab. Es kann schon nach
 ## 15. Anhang
 
 **Verwandte Dateien:**
-- Plan: `C:\Users\benja\.claude\plans\ich-will-ein-dashboard-humming-comet.md`
+- Ursprünglicher Plan: lokale Claude-Plan-Datei (nicht im Repo)
 - Server-Stil (Hono, zod, Repository): `C:\_repos\relaunch-radar\server\`
 - relaunch-radar-Integrationspunkte: `/api/overview`, `/api/jobs/running`, `/api/notifications/stream`, `logs/notifications.json`
 - UI-Vorlage (Grid, Registry): `C:\_repos\widget_dashboard\web-mockup\src\hub`, `src\widgets\registry.ts`
